@@ -3,6 +3,9 @@
 A Julia package for antenna array factor synthesis via convex optimization.
 Supports LP, QP, and SOCP formulations with multiple solvers through JuMP.
 
+> [!NOTE]
+> Docstrings are still in progress.
+
 ![Synthesized array patterns](docs/src/assets/readme_patterns.png)
 
 ## Installation

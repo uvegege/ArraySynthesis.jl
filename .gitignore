@@ -1,3 +1,4 @@
 Articulos
 Manifest.toml
 build*
+make_readme_figure.jl

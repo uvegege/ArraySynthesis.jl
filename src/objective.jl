@@ -44,7 +44,7 @@ end
 MinWeightedL1(alpha; sum_limit = nothing) = MinWeightedL1(collect(alpha), sum_limit)
 
 
-struct MinActiveElements <: DirectObjective end
+# struct MinActiveElements <: DirectObjective end
 
 struct MinFieldError{P, T} <: DirectObjective
     points::Vector{P}
@@ -67,7 +67,8 @@ struct MaxDirectivity{P, R} <: DirectObjective
     region::R
 end
 
-MaxDirectivity(dir, region::Region) = MaxDirectivity(direction(dir), region)
+MaxDirectivity(dir::Number, region::Region) = MaxDirectivity(direction(dir), region)
+MaxDirectivity(dir::NamedTuple{(:u, :v)}, region::Region) = MaxDirectivity(direction(dir), region)
 
 # Wrapper for array_factor when used in model building context (with JuMP variables)
 array_factor(model, array, points, weights, vars) = array_factor_reim(model, array, points, weights, vars)

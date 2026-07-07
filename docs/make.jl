@@ -37,6 +37,7 @@ makedocs(
             "QP"   => "guide/formulations/qp.md",
             "SOCP" => "guide/formulations/socp.md",
         ],
+        "Implementation notes" => "implementation.md",
         "API"     => "api.md",
     ],
     checkdocs = :none,

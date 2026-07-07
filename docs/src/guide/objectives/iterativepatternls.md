@@ -18,16 +18,24 @@ IterativePatternLeastSquares(region, target; max_iter = 15)
 
 ## Description
 
-Based on Fuchs (2010). At each iteration, the phase reference is updated from the
-previous solution, so the optimizer fits a complex target without requiring the phase
-to be fixed in advance. The method converges to a shaped beam that matches the target
-amplitude while satisfying the sidelobe and null constraints from the `Pattern`.
+Based on the iterative LP shaped-beam method of Fuchs (2010). At each iteration, the
+phase reference is updated from the previous solution, so the optimizer fits a complex
+target without requiring the phase to be fixed in advance. The method converges to a
+shaped beam that matches the target amplitude while satisfying the sidelobe and null
+constraints from the `Pattern`.
 
 Unlike `MinFieldError`, the target phase is not fixed: the algorithm finds the phase
 that best matches the target amplitude, making it suitable for arbitrary arrays where
 a natural phase reference does not exist.
 
 Compatible with `LP` and `SOCP`.
+
+## Literature
+
+This strategy is based on:
+
+- B. Fuchs, "Shaped Beam Synthesis of Arbitrary Arrays via Linear Programming,"
+  *IEEE Antennas and Wireless Propagation Letters*, vol. 9, pp. 481-484, 2010.
 
 ## Example
 

@@ -18,14 +18,24 @@ IterativeReweightedL1(; max_iter = 15, d0 = 1e-3, stable_iterations = 3)
 
 ## Description
 
-Promotes sparse arrays using the Candès–Wakin–Boyd reweighted L1 algorithm. At each
-iteration $k$, elements with small excitation amplitude $|w_n^{(k)}|$ receive a higher
-penalty weight $\alpha_n^{(k+1)} \propto 1 / (|w_n^{(k)}| + d_0)$ in the next L1
-minimization. This biases the solution toward fewer active elements without requiring
-integer variables.
+Promotes sparse arrays using iterative reweighted L1 minimization. At each iteration
+$k$, elements with small excitation amplitude $|w_n^{(k)}|$ receive a higher penalty
+weight $\alpha_n^{(k+1)} \propto 1 / (|w_n^{(k)}| + d_0)$ in the next L1 minimization.
+This biases the solution toward fewer active elements without requiring integer
+variables.
 
 The number of active elements is not set explicitly; it emerges from the pattern
 constraints and the array geometry. Compatible with `LP` and `SOCP`.
+
+## Literature
+
+The reweighting idea is the Candès–Wakin–Boyd sparse recovery heuristic. In antenna
+array synthesis, this package's single-pattern sparse strategy is closest to the
+sequential convex optimization approach in:
+
+- B. Fuchs, "Synthesis of Sparse Arrays With Focused or Shaped Beampattern via
+  Sequential Convex Optimizations," *IEEE Transactions on Antennas and Propagation*,
+  vol. 60, no. 7, pp. 3499-3503, Jul. 2012.
 
 ## Example
 

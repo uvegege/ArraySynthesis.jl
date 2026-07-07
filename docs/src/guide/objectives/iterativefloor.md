@@ -20,13 +20,21 @@ IterativeFloorSynthesis(direction; sll = -30dB, max_iter = 15, tol = 1e-4, stabl
 
 ## Description
 
-Implements the Orchard–Elliott / Tseng–Griffiths iterative peak correction algorithm.
-At each step, the highest sidelobe peak in the current solution is identified and a
-linear floor constraint is added to the model. The process repeats until the SLL target
-is reached or no further improvement occurs.
+Implements a Tseng–Griffiths-style iterative peak correction algorithm for prescribed
+sidelobe envelopes. At each step, the highest sidelobe peak in the current solution is
+identified and a linear floor constraint is added to the model. The process repeats
+until the SLL target is reached or no further improvement occurs.
 
 The sidelobe floor constraints grow with each iteration, increasing model size.
 Requires `QP`.
+
+## Literature
+
+This strategy follows the linearly constrained least-squares peak-correction method in:
+
+- C.-Y. Tseng and L. J. Griffiths, "A Simple Algorithm to Achieve Desired Patterns for
+  Arbitrary Arrays," *IEEE Transactions on Signal Processing*, vol. 40, no. 11,
+  pp. 2737-2746, Nov. 1992.
 
 ## Example
 

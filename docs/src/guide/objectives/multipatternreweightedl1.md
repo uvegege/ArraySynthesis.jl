@@ -26,6 +26,15 @@ pattern has independent weight variables optimized separately.
 Pass a **vector** of `Pattern` objects as the second argument to `synthesize`.
 The result is a `MultiPatternResult` with one weight vector per pattern.
 
+## Literature
+
+This strategy follows the multiple-pattern iterative LP formulation in:
+
+- Y. Liu, P. You, C. Zhu, X. Tan, and Q. H. Liu, "Synthesis of Sparse or Thinned
+  Linear and Planar Arrays Generating Reconfigurable Multiple Real Patterns by
+  Iterative Linear Programming," *Progress In Electromagnetics Research*, vol. 155,
+  pp. 27-38, 2016.
+
 ## Example
 
 Two-pattern reconfigurable planar array — broadside circular beam and offset rhombus beam:

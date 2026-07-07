@@ -31,8 +31,3 @@ array = symmetric_linear_array(32, d = 0.5)
 
 result = synthesize(array, p, obj, ConjugateSymmetricWeights(), LP(), HiGHS.Optimizer)
 ```
-
-## References
-
-- H. Lebret and S. Boyd, "Antenna array pattern synthesis via convex optimization," *IEEE Trans. Signal Process.*, vol. 45, no. 3, pp. 526–532, Mar. 1997.
-- B. Fuchs, "Shaped beam synthesis of arbitrary arrays via linear programming," *IEEE Antennas Wireless Propag. Lett.*, vol. 9, pp. 481–484, 2010.

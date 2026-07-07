@@ -6,9 +6,9 @@ using HiGHS
 
 array = uniform_linear_array(21, d = 0.5)
 
-ramp_level(p) = begin
+function ramp_level(p)
     θdeg = p.θ / °
-    θdeg < 40 ? ((-40 - (-30)) / (40 - (-90))) * (θdeg - (-90)) - 30 : -30
+    return θdeg < 40 ? ((-40 - (-30)) / (40 - (-90))) * (θdeg - (-90)) - 30 : -30
 end
 
 sll_region1 = region(-90°..40°, 0.5°)

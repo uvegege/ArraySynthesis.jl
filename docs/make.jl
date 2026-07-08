@@ -1,5 +1,14 @@
 using Documenter
+using Literate
 using ArraySynthesis
+
+literate_src = joinpath(@__DIR__, "literate")
+literate_dst = joinpath(@__DIR__, "src", "examples")
+mkpath(literate_dst)
+
+for file in sort(filter(endswith(".jl"), readdir(literate_src; join = true)))
+    Literate.markdown(file, literate_dst; documenter = false, execute = false)
+end
 
 makedocs(
     sitename = "ArraySynthesis.jl",
@@ -36,6 +45,14 @@ makedocs(
             "LP"   => "guide/formulations/lp.md",
             "QP"   => "guide/formulations/qp.md",
             "SOCP" => "guide/formulations/socp.md",
+        ],
+        "Guided examples" => [
+            "Flat-top linear beam"          => "examples/flat_top_linear.md",
+            "Ramp sidelobe mask"            => "examples/narrow_beam_ramp_sll.md",
+            "Two-level sidelobe mask"       => "examples/nonuniform_sll_steps.md",
+            "Planar shaped beam"            => "examples/planar_shaped_beam.md",
+            "Power and null constraints"    => "examples/power_nulls_compare.md",
+            "Sparse multipattern thinning"  => "examples/sparse_multipattern.md",
         ],
         "Implementation notes" => "implementation.md",
         "API"     => "api.md",

@@ -63,7 +63,7 @@ function filter_beam_objectives(pattern, objective)
     return Pattern(beams, pattern.shaped_beams, pattern.null_directions, pattern.sidelobe_regions)
 end
 
-function solve_model(array, pattern, objective::DirectObjective, weights, formulation, solver; solver_options = nothing)
+function solve_model(array, pattern, objective::DirectObjective, weights, formulation, solver; solver_options = nothing, robustness = nothing)
     check_formulation(objective, formulation)
     model = Model(solver)
     if !isnothing(solver_options)
@@ -73,16 +73,17 @@ function solve_model(array, pattern, objective::DirectObjective, weights, formul
     end
     set_silent(model)
     vars = variables!(model, array, weights, formulation)
-    constraints!(model, filter_beam_objectives(pattern, objective), array, weights, vars, formulation)
-    aux = objective!(model, objective, pattern, array, weights, vars, formulation)
+    robust_margin = robust_margin!(model, array, weights, vars, formulation, robustness)
+    constraints!(model, filter_beam_objectives(pattern, objective), array, weights, vars, formulation, robust_margin)
+    aux = objective!(model, objective, pattern, array, weights, vars, formulation, robust_margin)
     optimize!(model)
     return model, vars, aux
 end
 
 
-function synthesize(array, pattern, objective::DirectObjective, weights, formulation, solver; solver_options = nothing)
+function synthesize(array, pattern, objective::DirectObjective, weights, formulation, solver; solver_options = nothing, robustness = nothing)
     weights = resolve_phase_reference(weights, pattern)
-    model, vars, _ = solve_model(array, pattern, objective, weights, formulation, solver; solver_options = solver_options)
+    model, vars, _ = solve_model(array, pattern, objective, weights, formulation, solver; solver_options = solver_options, robustness = robustness)
     is_solved_and_feasible(model) || @warn "Synthesis failed: $(termination_status(model))"
     return SynthesisResult(extract_weights(vars), termination_status(model), objective_value(model), model)
 end

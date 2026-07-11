@@ -46,6 +46,7 @@ makedocs(
             "QP"   => "guide/formulations/qp.md",
             "SOCP" => "guide/formulations/socp.md",
         ],
+        "Robustness" => "guide/robustness.md",
         "Guided examples" => [
             "Flat-top linear beam"          => "examples/flat_top_linear.md",
             "Ramp sidelobe mask"            => "examples/narrow_beam_ramp_sll.md",

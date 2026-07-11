@@ -21,6 +21,9 @@ No polygon approximation; the modulus bound is always exact.
 Required by `MaxDirectivity`. Compatible with linear and quadratic objectives.
 Typically slower than `LP`/`QP` on large models but more accurate for complex AF.
 
+Also required when using [`robust`](@ref "Robustness"), because robust bounds use
+one shared norm cone for the excitation vector.
+
 Suggested solvers: `Clarabel.Optimizer`, `Mosek.Optimizer`
 
 ## Example
@@ -42,5 +45,7 @@ result = synthesize(array, p, MinPower(), ComplexWeights(), SOCP(), Clarabel.Opt
 **Alternative formulations:** [`LP`](@ref "LP"), [`QP`](@ref "QP")
 
 **Objective requiring SOCP:** [`MaxDirectivity`](@ref "MaxDirectivity")
+
+**Robust synthesis:** [`Robustness`](@ref)
 
 **Background:** [Modulus Constraints per Formulation](@ref)

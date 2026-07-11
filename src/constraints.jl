@@ -1,8 +1,5 @@
 using LinearAlgebra: factorize
 
-direction_vector(p::ThetaDirection) =(sin(p.θ), 0.0, cos(p.θ))
-direction_vector(p::UVDirection) = (p.u, p.v, sqrt(max(0.0, 1.0 - p.u^2 - p.v^2)))
-
 function direction_matrix(points)
     U = zeros(Float64, 3, length(points))
     for (i, p) in enumerate(points)
@@ -201,15 +198,16 @@ l1_limit!(model, t, limit::Nothing) = nothing
 l1_limit!(model, t, limit) = @constraint(model, sum(t) <= limit)
 
 
-function sidelobe_constraints!(model, sl::SideLobeRegion, upper, array, weights, vars, formulation)
+function sidelobe_constraints!(model, sl::SideLobeRegion, upper, array, weights, vars, formulation, robustness)
     af_re, af_im = array_factor_reim(model, array, sl.region.points, weights, vars)
     for i in eachindex(sl.region.points)
-        modulus_upper_bound!(model, af_re[i], imag_part(af_im, i), bound_at(upper, i), formulation)
+        bound = robust_bound(bound_at(upper, i), robustness, array, sl.region.points[i])
+        modulus_upper_bound!(model, af_re[i], imag_part(af_im, i), bound, formulation)
     end
 end
 
-function sidelobe_constraints!(model, sl::SideLobeRegion, array, weights, vars, formulation)
-    sidelobe_constraints!(model, sl, sl.upper, array, weights, vars, formulation)
+function sidelobe_constraints!(model, sl::SideLobeRegion, array, weights, vars, formulation, robustness)
+    sidelobe_constraints!(model, sl, sl.upper, array, weights, vars, formulation, robustness)
 end
 
 shaped_reference(array, points, weights, target, im::Nothing) = target
@@ -257,6 +255,26 @@ function shaped_bound!(model, re, im, target, ripple, ::SOCP)
     @constraint(model, [ε, re - real(target), im - imag(target)] in SecondOrderCone())
 end
 
+function shaped_bound!(model, re, im::Nothing, target, ripple, ::SOCP, robustness, array, point)
+    b1 = target * ripple
+    b2 = target / ripple
+    lo = min(b1, b2)
+    hi = max(b1, b2)
+    center = (lo + hi) / 2
+    radius = robust_bound((hi - lo) / 2, robustness, array, point)
+    @constraint(model, re - center <= radius)
+    @constraint(model, re - center >= -radius)
+end
+
+function shaped_bound!(model, re, im, target, ripple, ::SOCP, robustness, array, point)
+    ε = robust_bound(abs(target) * abs(1 - ripple), robustness, array, point)
+    @constraint(model, [ε, re - real(target), im - imag(target)] in SecondOrderCone())
+end
+
+function shaped_bound!(model, re, im, target, ripple, formulation, ::Nothing, array, point)
+    shaped_bound!(model, re, im, target, ripple, formulation)
+end
+
 function gain_constraint!(model, re, im::Nothing, gain)
     @constraint(model, re == gain)
 end
@@ -275,7 +293,7 @@ function constrain_variables!(model, array::SymmetricArray, ::ConjugateSymmetric
     end
 end
 
-function constraints!(model, pattern::Pattern, array, weights, vars, formulation)
+function constraints!(model, pattern::Pattern, array, weights, vars, formulation, robustness = nothing)
     constrain_variables!(model, array, weights, vars)
 
     for b in pattern.beams
@@ -288,16 +306,17 @@ function constraints!(model, pattern::Pattern, array, weights, vars, formulation
         af_re, af_im = array_factor_reim_from_steering(A, weights, vars)
         target = shaped_reference_from_steering(A, sb.target, af_im)
         for i in eachindex(sb.region.points)
-            shaped_bound!(model, af_re[i], imag_part(af_im, i), target[i], sb.ripple, formulation)
+            shaped_bound!(model, af_re[i], imag_part(af_im, i), target[i], sb.ripple, formulation, robustness, array, sb.region.points[i])
         end
     end
 
     for n in pattern.null_directions
         af_re, af_im = array_factor_reim(model, array, (n.direction, ), weights, vars)
-        modulus_upper_bound!(model, af_re[1], imag_part(af_im, 1), n.level, formulation)
+        bound = robust_bound(n.level, robustness, array, n.direction)
+        modulus_upper_bound!(model, af_re[1], imag_part(af_im, 1), bound, formulation)
     end
 
     for sl in pattern.sidelobe_regions
-        sidelobe_constraints!(model, sl, array, weights, vars, formulation)
+        sidelobe_constraints!(model, sl, array, weights, vars, formulation, robustness)
     end
 end

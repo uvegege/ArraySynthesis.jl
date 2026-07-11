@@ -10,6 +10,7 @@ module ArraySynthesis
     include("./coefficients.jl")
     include("./steering.jl")
     include("./variables.jl")
+    include("./robustness.jl")
     include("./constraints.jl")
     include("./objective.jl")
     include("./strategy.jl")
@@ -51,5 +52,7 @@ module ArraySynthesis
     export MultiPatternReweightedL1
 
     export SynthesisResult, IterativeSynthesisResult, MultiPatternResult
+
+    export Tolerances, robust
 
 end

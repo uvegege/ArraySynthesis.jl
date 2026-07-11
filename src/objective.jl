@@ -118,19 +118,20 @@ function objective!(model, objective::MinIntegratedPower, pattern, array, weight
     return nothing
 end
 
-function region_sll_constraints!(model, region::Region, upper, array, weights, vars, formulation)
+function region_sll_constraints!(model, region::Region, upper, array, weights, vars, formulation, robustness = nothing)
     af_re, af_im = array_factor(model, array, region.points, weights, vars)
     for i in eachindex(region.points)
-        modulus_upper_bound!(model, af_re[i], imag_part(af_im, i), upper, formulation)
+        bound = robust_bound(upper, robustness, array, region.points[i])
+        modulus_upper_bound!(model, af_re[i], imag_part(af_im, i), bound, formulation)
     end
 end
 
-function constrain_sll_objective!(model, objective::MinSLL, pattern, array, weights, vars, formulation)
+function constrain_sll_objective!(model, objective::MinSLL, pattern, array, weights, vars, formulation, robustness = nothing)
     t = @variable(model, [1:length(objective.regions)])
     for (i, region) in enumerate(objective.regions)
         objective.lower_bound !== nothing && @constraint(model, t[i] >= objective.lower_bound)
         objective.lower_bound !== nothing && @constraint(model, t[i] <= objective.upper_bound)
-        region_sll_constraints!(model, region, t[i], array, weights, vars, formulation)
+        region_sll_constraints!(model, region, t[i], array, weights, vars, formulation, robustness)
     end
     return t
 end
@@ -139,6 +140,16 @@ function objective!(model, objective::MinSLL, pattern, array, weights, vars, for
     t = constrain_sll_objective!(model, objective, pattern, array, weights, vars, formulation)
     @objective(model, Min, sum(t))
     return t
+end
+
+function objective!(model, objective::MinSLL, pattern, array, weights, vars, formulation, robustness)
+    t = constrain_sll_objective!(model, objective, pattern, array, weights, vars, formulation, robustness)
+    @objective(model, Min, sum(t))
+    return t
+end
+
+function objective!(model, objective, pattern, array, weights, vars, formulation, robustness)
+    return objective!(model, objective, pattern, array, weights, vars, formulation)
 end
 
 objective_nvariables(vars::SparseVariables) = nvariables(vars.variables)

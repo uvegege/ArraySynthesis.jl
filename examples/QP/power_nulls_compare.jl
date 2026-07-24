@@ -1,6 +1,5 @@
 using ArraySynthesis
 using ArraySynthesis: °, dB
-using GLMakie
 using LinearAlgebra
 using HiGHS, Clarabel
 
@@ -31,6 +30,7 @@ af_qp  = 20 .* log10.(max.([abs(array_factor(array, coef, result_qp.weights,   [
 af_lp  = 20 .* log10.(max.([abs(array_factor(array, coef, result_lp.weights,   [ThetaDirection(θ)])[1]) for θ in theta_vals], 1e-12))
 af_socp = 20 .* log10.(max.([abs(array_factor(array, coef, result_socp.weights, [ThetaDirection(θ)])[1]) for θ in theta_vals], 1e-12))
 
+using GLMakie
 fig = Figure()
 ax = Axis(fig[1,1], xlabel="θ (rad)", ylabel="|AF| (dB)")
 lines!(ax, theta_vals, af_qp,   linewidth=2, label="QP")

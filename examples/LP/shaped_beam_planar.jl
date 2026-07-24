@@ -1,11 +1,9 @@
 using ArraySynthesis
 using ArraySynthesis: °, dB
-using GLMakie
 using LinearAlgebra
 using HiGHS
 
 
-# Resultados_2-style: 16x16 symmetric planar, diamond beam at (14°,12°), null region.
 array_full = planar_array(16, 16, dx = 0.5, dy = 0.5)
 array = SymmetricArray(symmetrize(array_full.positions)...)
 
@@ -14,7 +12,7 @@ beam_shape = rhombus((focus.u, focus.v), 16°)
 beam_region = region(beam_shape, step = 2°)
 
 null_dir = uv(-55°, -55°)
-null_shape = Circle(0.3, (null_dir.u, null_dir.v))
+null_shape = ArraySynthesis.Circle(0.3, (null_dir.u, null_dir.v))
 null_region = region(null_shape, step = 2°)
 sl_region = visible_region(beam_shape, null_shape; step = 4°, bandpass = 0.12)
 
@@ -33,16 +31,17 @@ af_vals = reshape(20 .* log10.(abs.(getindex.(AF, 1)) .+ 1e-12), length(U), leng
 AF2 = array_factor(array, ProgressivePhaseAmplitude(focus), result2.weights, dirs)
 af_vals2 = reshape(20 .* log10.(abs.(getindex.(AF2, 1)) .+ 1e-12), length(U), length(V))
 
+using GLMakie
 fig = Figure()
 ax = Axis(fig[1,1], xlabel="u", ylabel="v")
-image!(ax, (-1,1), (-1,1), af_vals, colorrange=(-40, 0), colormap = parula_cm)
+image!(ax, (-1,1), (-1,1), af_vals, colorrange=(-40, 0), colormap = :viridis)
 Colorbar(fig[1,3], colorrange=(-40, 0)); fig
 ax2 = Axis3(fig[1,2])
-surface!(ax2, U, V, map(x->max(-50, x), af_vals), colormap = parula_cm)
+surface!(ax2, U, V, map(x->max(-50, x), af_vals), colormap = :viridis)
 ax = Axis(fig[2,1], xlabel="u", ylabel="v")
-image!(ax, (-1,1), (-1,1), af_vals2, colorrange=(-40, 0), colormap = parula_cm)
+image!(ax, (-1,1), (-1,1), af_vals2, colorrange=(-40, 0), colormap = :viridis)
 Colorbar(fig[2,3], colorrange=(-40, 0)); fig
 ax2 = Axis3(fig[2,2])
-surface!(ax2, U, V, map(x->max(-50, x), af_vals2), colormap = parula_cm)
+surface!(ax2, U, V, map(x->max(-50, x), af_vals2), colormap = :viridis)
 fig
 

@@ -1,10 +1,8 @@
 using ArraySynthesis
 using ArraySynthesis: °, dB
-using GLMakie
 using LinearAlgebra
 using HiGHS
 using Clarabel
-
 
 sl_region1 = region(-90°..(-17.5°), 1°)
 sl_region2 = region(-17.5°..0°, 1°)
@@ -27,6 +25,7 @@ theta_vals = -π/2:0.0005:π/2
 af_vals = [abs(array_factor(array, coef, result.weights, [ThetaDirection(θ)])[1]) for θ in theta_vals]
 af_db = 20 .* log10.(max.(af_vals, 1e-12))
 
+using GLMakie
 fig = Figure()
 ax = Axis(fig[1,1], xlabel="sin(θ)", ylabel="|AF| (dB)")
 lines!(ax, sin.(theta_vals), af_db, linewidth=2)

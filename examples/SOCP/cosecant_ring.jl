@@ -1,6 +1,5 @@
 using ArraySynthesis
 using ArraySynthesis: °, dB
-using GLMakie
 using LinearAlgebra
 using Clarabel
 
@@ -62,6 +61,7 @@ AF = array_factor(array, coef, result.weights, dirs)
 af_db = 20 .* log10.(max.(abs.(AF), 1e-12))
 af_vals = reshape(af_db, length(V), length(U))'
 
+using GLMakie
 begin
     fig = Figure()
     U = collect(-1.0:0.01:1.0)
@@ -71,6 +71,6 @@ begin
     af_vals = reshape(20 .* log10.(abs.(getindex.(AF, 1)) .+ 1e-12), length(U), length(V))
     af_vals = [max(af_i, -50) for af_i in af_vals]
     ax3 = Axis3(fig[1,1])
-    surface!(ax3, U, V, af_vals, colormap = parula_cm)
+    surface!(ax3, U, V, af_vals, colormap = :viridis)
     fig
 end

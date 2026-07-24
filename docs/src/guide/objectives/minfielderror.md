@@ -17,11 +17,9 @@ MinFieldError(region, reference)
 
 ## Description
 
-Minimizes $\sum_p |AF(\hat{r}_p) - f_p|^2$ over the points in `region`, where $f_p$
-are the complex reference values. The objective is quadratic; requires `QP` or `SOCP`.
+Minimizes $\sum_p |AF(\hat{r}_p) - f_p|^2$ over the points in `region`, where $f_p$ are the complex reference values. The objective is quadratic; requires `QP` or `SOCP`.
 
-Unlike `IterativePatternLeastSquares`, the reference phase is fixed. If the phase of the
-target is not known a priori, `IterativePatternLeastSquares` is generally preferable.
+The reference phase is fixed. Use `shaped_beam` when the specification is an amplitude mask with ripple rather than a complex reference.
 
 ## Example
 
@@ -31,15 +29,8 @@ using ArraySynthesis; using ArraySynthesis: °, dB; using HiGHS
 array  = uniform_linear_array(28, d = 0.5)
 beam_r = region(-20°..20°, 1°)
 target = [cos(π * p.θ / 20°) for p in beam_r.points]   # real-valued cosine target
-p      = pattern(sidelobes(region(-90°..(-25°), 1°), -25dB),
-                 sidelobes(region(25°..90°,     1°), -25dB))
+p = pattern(sidelobes(region(-90°..(-25°), 1°), -25dB),
+            sidelobes(region(25°..90°,     1°), -25dB))
 
 result = synthesize(array, p, MinFieldError(beam_r, target), ComplexWeights(), QP(), HiGHS.Optimizer)
 ```
-
-## Related
-
-**Field-fitting objectives:** [`IterativePatternLeastSquares`](@ref "IterativePatternLeastSquares"),
-[`MinIntegratedPower`](@ref "MinIntegratedPower")
-
-**Compatible formulations:** [`QP`](@ref "QP"), [`SOCP`](@ref "SOCP")

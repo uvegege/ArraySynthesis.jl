@@ -1,6 +1,5 @@
 using ArraySynthesis
 using ArraySynthesis: °, dB
-using GLMakie
 using LinearAlgebra
 using HiGHS
 using Mosek, MosekTools

@@ -1,9 +1,6 @@
 # Power and null constraints
 
-This example uses a linear array with explicit nulls and a piecewise sidelobe
-mask. The same specification is solved with LP, QP, and SOCP formulations to
-show how the formulation changes the optimization problem while the array,
-regions, and coefficient type stay fixed.
+This example uses a linear array with explicit nulls and a piecewise sidelobe mask. The same specification is solved with LP, QP, and SOCP formulations to show how the formulation changes the optimization problem while the array, regions, and coefficient type stay fixed.
 
 ````julia
 using ArraySynthesis
@@ -15,8 +12,7 @@ array = uniform_linear_array(32, d = 0.5)
 coef = ComplexWeights()
 ````
 
-The sidelobe mask is split into angular intervals. This makes it possible to
-combine broad -20 dB regions with deeper -40 dB protected regions.
+The sidelobe mask is split into angular intervals. This makes it possible to combine broad -20 dB regions with deeper -40 dB protected regions.
 
 ````julia
 sll_region1 = region(ClosedInterval(-90°, -69°), 1°)
@@ -42,9 +38,7 @@ p = pattern(
 )
 ````
 
-`MinL1` gives an LP reference solution. `MinPower` adds an explicit quadratic
-objective; with `SOCP`, the same power objective is expressed through
-second-order cone constraints.
+`MinL1` gives an LP reference solution. `MinPower` adds an explicit quadratic objective; with `SOCP`, the same power objective is expressed through second-order cone constraints.
 
 ````julia
 result_lp = synthesize(array, p, MinL1(1.2), coef, LP(), Mosek.Optimizer)
@@ -70,6 +64,4 @@ fig
 ![Power and null constraints](../assets/power_nulls_compare.png)
 
 ---
-
-*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl).*
 

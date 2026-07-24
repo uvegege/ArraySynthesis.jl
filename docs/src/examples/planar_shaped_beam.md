@@ -1,8 +1,6 @@
 # Planar shaped beam
 
-This example moves from angular intervals to regions in the visible `u,v`
-plane. The main beam is a diamond-shaped region, and a separate circular region
-is forced to a deep null.
+This example moves from angular intervals to regions in the visible `u,v` plane. The main beam is a diamond-shaped region, and a separate circular region is forced to a deep null.
 
 ````julia
 using ArraySynthesis
@@ -14,8 +12,7 @@ array_full = planar_array(16, 16, dx = 0.5, dy = 0.5)
 array = SymmetricArray(symmetrize(array_full.positions)...)
 ````
 
-`uv(θ, ϕ)` converts an angular direction into direction cosines. Shapes are
-then sampled into `Region`s.
+`uv(θ, ϕ)` converts an angular direction into direction cosines. Shapes are then sampled into `Region`s.
 
 ````julia
 focus = uv(14°, 12°)
@@ -39,8 +36,7 @@ p = pattern(
 obj = MinSLL([sl_region])
 ````
 
-Compare a real-AF conjugate-symmetric solution with a fixed progressive phase
-solution centered on the desired beam.
+Compare a real AF conjugate symmetric solution with a fixed progressive phase solution centered on the desired beam.
 
 ````julia
 result1 = synthesize(array, p, obj, ConjugateSymmetricWeights(), LP(), HiGHS.Optimizer)
@@ -64,12 +60,10 @@ Colorbar(fig[1, 3], colorrange = (-40, 0), colormap = :viridis)
 fig
 ````
 
-The documentation includes a precomputed result image, so this example is
-shown without being executed by Documenter.
+The documentation includes a precomputed result image, so this example is shown without being executed by Documenter.
 
 ![Planar shaped beam](../assets/planar_shaped_beam.png)
 
 ---
 
-*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl).*
 

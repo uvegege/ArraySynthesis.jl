@@ -271,10 +271,6 @@ function shaped_bound!(model, re, im, target, ripple, ::SOCP, robustness, array,
     @constraint(model, [ε, re - real(target), im - imag(target)] in SecondOrderCone())
 end
 
-function shaped_bound!(model, re, im, target, ripple, formulation, ::Nothing, array, point)
-    shaped_bound!(model, re, im, target, ripple, formulation)
-end
-
 function gain_constraint!(model, re, im::Nothing, gain)
     @constraint(model, re == gain)
 end
@@ -306,7 +302,11 @@ function constraints!(model, pattern::Pattern, array, weights, vars, formulation
         af_re, af_im = array_factor_reim_from_steering(A, weights, vars)
         target = shaped_reference_from_steering(A, sb.target, af_im)
         for i in eachindex(sb.region.points)
-            shaped_bound!(model, af_re[i], imag_part(af_im, i), target[i], sb.ripple, formulation, robustness, array, sb.region.points[i])
+            if robustness === nothing
+                shaped_bound!(model, af_re[i], imag_part(af_im, i), target[i], sb.ripple, formulation)
+            else
+                shaped_bound!(model, af_re[i], imag_part(af_im, i), target[i], sb.ripple, formulation, robustness, array, sb.region.points[i])
+            end
         end
     end
 

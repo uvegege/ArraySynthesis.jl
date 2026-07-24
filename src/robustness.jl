@@ -1,3 +1,8 @@
+"""
+    Tolerances
+
+Tolerance data created by `robust` and consumed by `synthesize`.
+"""
 struct Tolerances{P}
     pointing::P
     phase::Float64
@@ -11,6 +16,23 @@ struct RobustMargin{T, R}
     norm_bound::R
 end
 
+"""
+    robust(; pointing_accuracy = 0.0,
+             phase_tolerance = 0.0,
+             amplitude_tolerance = 0.0,
+             position_tolerance = 0.0,
+             combine = :quadrature)
+
+Create tolerance data for robust synthesis constraints.
+
+The returned `Tolerances` object can be passed to `synthesize` through the
+`robustness` keyword. Robustness tightens supported pattern bounds by a norm
+margin that accounts for pointing, phase, amplitude, and position uncertainty.
+`combine` controls how contributions are accumulated and must be either
+`:quadrature` or `:sum`.
+
+Robust synthesis currently requires the `SOCP` formulation.
+"""
 function robust(; pointing_accuracy = 0.0, phase_tolerance = 0.0, amplitude_tolerance = 0.0, position_tolerance = 0.0, combine = :quadrature)
     combine in (:quadrature, :sum) || throw(ArgumentError("combine must be :quadrature or :sum."))
     return Tolerances(pointing_tuple(pointing_accuracy), Float64(phase_tolerance), amplitude_linear_tolerance(amplitude_tolerance), position_tuple(position_tolerance), combine)

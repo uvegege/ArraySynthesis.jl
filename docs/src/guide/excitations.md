@@ -1,12 +1,8 @@
 # Excitations
 
-The `AbstractExcitation` defines the parametrization of the array weights and,
-consequently, the structure of the array factor passed to the optimizer. Pass it as
-the fourth argument to [`synthesize`](@ref).
+The `AbstractExcitation` defines the parametrization of the array weights and, consequently, the structure of the array factor passed to the optimizer. Pass it as the fourth argument to [`synthesize`](@ref).
 
-!!! note "Provisional guide"
-    This page is a selection guide. The individual excitation pages contain the
-    syntax, examples, and detailed notes.
+Use this page to choose the excitation parametrization. For exact constructor signatures, see the [API Reference](@ref).
 
 ## Choosing an Excitation
 
@@ -19,18 +15,17 @@ the fourth argument to [`synthesize`](@ref).
 
 ## Real Array Factors
 
-[`ConjugateSymmetricWeights`](@ref "ConjugateSymmetricWeights") is the main option for
-centrosymmetric arrays. It enforces conjugate-symmetric weights and makes the array
-factor real by construction. On a `SymmetricArray`,
-[`ProgressivePhaseAmplitude`](@ref "ProgressivePhaseAmplitude") also gives a real array
-factor while fixing the phase progression toward a steering direction.
+[`ConjugateSymmetricWeights`](@ref "ConjugateSymmetricWeights") is the main option for centrosymmetric arrays. It enforces conjugate-symmetric weights and makes the array factor real by construction. On a `SymmetricArray`, [`ProgressivePhaseAmplitude`](@ref "ProgressivePhaseAmplitude") also gives a real array factor while fixing the phase progression toward a steering direction.
 
-A real array factor is important because the modulus constraint becomes a pair of
-linear inequalities. See [Symmetric Arrays and Real Array Factor](@ref) for the
-derivation.
+A real array factor is important because the modulus constraint becomes a pair of linear inequalities. See [Symmetric Arrays and Real Array Factor](@ref) for the derivation.
 
-## Related
+## Excitation Notes
 
-**Background:** [Excitation Types](@ref), [Symmetric Arrays and Real Array Factor](@ref)
+[`ComplexWeights`](@ref "ComplexWeights") is the general option: every element has an independent complex coefficient. Use it when no symmetry or phase model should be imposed.
 
-**Formulation impact:** [`LP`](@ref "LP"), [`QP`](@ref "QP"), [`SOCP`](@ref "SOCP")
+[`RealWeights`](@ref "RealWeights") keeps only real optimization variables. The array factor can still be complex because the steering matrix is complex.
+
+[`ConjugateSymmetricWeights`](@ref "ConjugateSymmetricWeights") requires a [`SymmetricArray`](@ref "SymmetricArray").
+
+[`ProgressivePhaseAmplitude`](@ref "ProgressivePhaseAmplitude") fixes a progressive phase reference and optimizes real amplitudes. If the reference direction is omitted, it is inferred from the first beam or shaped-beam region in the pattern.
+

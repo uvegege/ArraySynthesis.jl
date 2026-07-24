@@ -1,3 +1,14 @@
+"""
+    SynthesisResult
+
+Result returned by direct synthesis objectives.
+
+Fields:
+- `weights`: complex excitation coefficients.
+- `status`: MathOptInterface termination status.
+- `objective_value`: optimizer objective value.
+- `model`: solved JuMP model.
+"""
 struct SynthesisResult
     weights::Vector{ComplexF64}
     status::MOI.TerminationStatusCode
@@ -5,6 +16,11 @@ struct SynthesisResult
     model::Model
 end
 
+"""
+    IterativeSynthesisResult
+
+Result returned by iterative single-pattern synthesis methods.
+"""
 struct IterativeSynthesisResult
     weights::Vector{ComplexF64}
     converged::Bool
@@ -39,6 +55,11 @@ end
 
 resolve_phase_reference(weights, pattern) = weights
 
+"""
+    MultiPatternResult
+
+Result returned by multi-pattern synthesis methods.
+"""
 struct MultiPatternResult
     weights::Vector{Vector{ComplexF64}}
     converged::Bool
@@ -81,6 +102,26 @@ function solve_model(array, pattern, objective::DirectObjective, weights, formul
 end
 
 
+"""
+    synthesize(array, pattern, objective, weights, formulation, solver;
+               solver_options = nothing, robustness = nothing)
+
+Build and solve an array synthesis problem.
+
+`array` defines the element geometry, `pattern` defines the desired beams,
+shaped beams, nulls, and sidelobe masks, `objective` selects what is optimized,
+`weights` selects the excitation model, and `formulation` selects the JuMP
+constraint formulation. `solver` is a JuMP-compatible optimizer constructor,
+such as `HiGHS.Optimizer` or `Clarabel.Optimizer`.
+
+For direct objectives, the result is a `SynthesisResult`. Iterative objectives
+return `IterativeSynthesisResult`, and multi-pattern iterative synthesis returns
+`MultiPatternResult`.
+
+Use `solver_options` to pass optimizer attributes. Use `robustness = robust(...)`
+to tighten supported constraints against tolerance margins; this requires
+`SOCP`.
+"""
 function synthesize(array, pattern, objective::DirectObjective, weights, formulation, solver; solver_options = nothing, robustness = nothing)
     weights = resolve_phase_reference(weights, pattern)
     model, vars, _ = solve_model(array, pattern, objective, weights, formulation, solver; solver_options = solver_options, robustness = robustness)
@@ -116,6 +157,12 @@ function synthesize(array, pattern, objective::IterativeReweightedL1, weights, f
 end
 
 
+"""
+    array_factor(array, weights, w, points)
+
+Evaluate the array factor at the supplied directions using excitation vector
+`w` and the selected excitation model.
+"""
 function array_factor(array::ArrayGeometry, ::Union{ComplexWeights, RealWeights}, w, pts)
     return steering_matrix(array, direction_matrix(pts)) * w
 end
@@ -134,32 +181,6 @@ function array_factor(array::SymmetricArray, weights::ProgressivePhaseAmplitude,
     A_cos, _ = steering_matrix(array, direction_matrix(pts) .- phase_direction(weights.β))
     a = real.(w)
     return [sum(A_cos[m, n] * a[n] for n in axes(A_cos, 2)) for m in eachindex(pts)]
-end
-
-# synthesize: IterativePatternLeastSquares
-# Each iteration: solve MinFieldError with complex target, then update target phase
-# from the current AF (Gerchberg-Saxton-style phase update).
-function synthesize(array, pattern, objective::IterativePatternLeastSquares, weights, formulation, solver; solver_options = nothing)
-    weights = resolve_phase_reference(weights, pattern)
-    pts = objective.region.points
-    mag = abs.(objective.target)
-    complex_target = ComplexF64.(objective.target)
-    w = zeros(ComplexF64, size(array.positions, 2))
-
-    for it in 1:objective.max_iter
-        model, vars, _ = solve_model(array, pattern, MinFieldError(pts, complex_target), weights, formulation, solver; solver_options = solver_options)
-        is_solved_and_feasible(model) ||
-            error("IterativePatternLeastSquares failed at iteration $it: $(termination_status(model))")
-
-        w_new = extract_weights(vars)
-        af = array_factor(array, weights, w_new, pts)
-        complex_target = mag .* cis.(angle.(af))
-
-        norm(w_new - w) < 1e-6 * (1 + norm(w_new)) && return IterativeSynthesisResult(w_new, true, it)
-        w = w_new
-    end
-
-    return IterativeSynthesisResult(w, false, objective.max_iter)
 end
 
 # IterativeFloorSynthesis helpers

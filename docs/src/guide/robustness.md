@@ -27,9 +27,7 @@ is replaced by
 |AF(p)| + \delta(p)\|w\|_2 \leq U(p).
 ```
 
-Internally this is built as one shared cone for ``\|w\|_2`` and an affine correction
-``\delta(p)t`` in each affected bound. This keeps the implementation small and avoids
-adding one cone per sampled point.
+Internally this is built as one shared cone for ``\|w\|_2`` and an affine correction ``\delta(p)t`` in each affected bound. This keeps the implementation small and avoids adding one cone per sampled point.
 
 ## What Is Robustified
 
@@ -40,10 +38,7 @@ Robustness currently applies to:
 - `shaped_beam`
 - [`MinSLL`](@ref "MinSLL")
 
-Beam equalities are kept nominal and act as normalization constraints.
-The current implementation is wired for direct single-shot solves. Iterative
-strategies could also pass the same robust bounds to their inner problems, but
-that path is not connected yet.
+Beam equalities are kept nominal and act as normalization constraints. The current implementation is wired for direct single-shot solves. Iterative strategies could also pass the same robust bounds to their inner problems, but that path is not connected yet.
 
 ## Tolerances
 
@@ -52,23 +47,14 @@ that path is not connected yet.
 - `pointing_accuracy`: angular error, in radians for `ThetaDirection`; for
   `UVDirection` it is interpreted as an offset in `(u, v)` coordinates.
 - `phase_tolerance`: per-channel phase error, in radians.
-- `amplitude_tolerance`: per-channel amplitude error. Values such as `0.05dB`
-  are converted to a linear relative tolerance.
-- `position_tolerance`: position error in wavelengths. A scalar means isotropic
-  3D error; `(xy = ..., z = ...)` separates in-plane and out-of-plane errors.
+- `amplitude_tolerance`: per-channel amplitude error. Values such as `0.05dB` are converted to a linear relative tolerance.
+- `position_tolerance`: position error in wavelengths. A scalar means isotropic 3D error; `(xy = ..., z = ...)` separates in-plane and out-of-plane errors.
 
 The default combination is `combine = :quadrature`; use `combine = :sum` for a
 more conservative direct sum.
 
 ## Formulation
 
-This implementation is SOCP-only because the correction uses ``\|w\|_2``. Calling
-`synthesize(...; robustness = rob)` with `LP()` or `QP()` raises an error.
+This implementation is SOCP-only because the correction uses ``\|w\|_2``. Calling `synthesize(...; robustness = rob)` with `LP()` or `QP()` raises an error.
 
-Deep nulls and tight sidelobe masks can become infeasible when the uncertainty
-margin is larger than the available bound. That is expected: robust synthesis is
-trading nominal performance for certified margin.
-
-## Example
-
-See `examples/SOCP/robust_sidelobes.jl`.
+Deep nulls and tight sidelobe masks can become infeasible when the uncertainty margin is larger than the available bound. That is expected: robust synthesis is trading nominal performance for certified margin.

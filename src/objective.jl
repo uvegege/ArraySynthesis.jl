@@ -1,18 +1,47 @@
+"""
+Abstract supertype for all synthesis objectives.
+"""
 abstract type AbstractObjective end
+
+"""
+Abstract supertype for objectives solved with a single optimization model.
+"""
 abstract type DirectObjective <: AbstractObjective end
 
+"""
+    Feasible()
+
+Find any excitation satisfying the pattern constraints.
+"""
 struct Feasible <: DirectObjective end
 
-struct MaxGain{P} <: DirectObjective
+"""
+    MaxAF([dirs])
+
+Maximize the real array-factor response in the supplied direction or directions.
+If no direction is provided, beam directions from the pattern are used.
+"""
+struct MaxAF{P} <: DirectObjective
     directions::Vector{P}
 end
 
-MaxGain() = MaxGain(AbstractDirection[])
-MaxGain(dir) = MaxGain([direction(dir)])
-MaxGain(dirs::AbstractVector) = MaxGain([direction(d) for d in dirs])
+MaxAF() = MaxAF(AbstractDirection[])
+MaxAF(dir) = MaxAF([direction(dir)])
+MaxAF(dirs::AbstractVector) = MaxAF([direction(d) for d in dirs])
 
+"""
+    MinPower()
+
+Minimize total excitation power.
+"""
 struct MinPower <: DirectObjective end
 
+"""
+    MinSLL(region; lower_bound = 0.0, upper_bound = -20.0dB)
+    MinSLL(regions; lower_bound = 0.0, upper_bound = -20.0dB)
+
+Minimize the sidelobe level over one or more regions.
+"""
 struct MinSLL{R, L} <: DirectObjective
     regions::Vector{R}
     lower_bound::L
@@ -22,6 +51,12 @@ end
 MinSLL(region::Region; lower_bound = 0.0, upper_bound = -20.0dB) = MinSLL([region]; lower_bound, upper_bound)
 MinSLL(regions::AbstractVector{<:Region}; lower_bound = 0.0, upper_bound = -20.0dB) = MinSLL(collect(regions), lower_bound, upper_bound)
 
+"""
+    MinIntegratedPower(region)
+    MinIntegratedPower(regions)
+
+Minimize integrated array-factor power over one or more sampled regions.
+"""
 struct MinIntegratedPower{R} <: DirectObjective
     regions::Vector{R}
 end
@@ -30,12 +65,22 @@ MinIntegratedPower(region::Region) = MinIntegratedPower([region])
 MinIntegratedPower(regions::AbstractVector{<:Region}) = MinIntegratedPower{eltype(regions)}(collect(regions))
 
 
+"""
+    MinL1(; sum_limit = nothing)
+
+Minimize a convex L1-type bound on the excitation variables.
+"""
 struct MinL1{L} <: DirectObjective
     sum_limit::L
 end
 
 MinL1(; sum_limit = nothing) = MinL1(sum_limit)
 
+"""
+    MinWeightedL1(alpha; sum_limit = nothing)
+
+Minimize a weighted convex L1-type bound with one weight per excitation variable.
+"""
 struct MinWeightedL1{A, L} <: DirectObjective
     alpha::A
     sum_limit::L
@@ -44,8 +89,11 @@ end
 MinWeightedL1(alpha; sum_limit = nothing) = MinWeightedL1(collect(alpha), sum_limit)
 
 
-# struct MinActiveElements <: DirectObjective end
+"""
+    MinFieldError(region, reference)
 
+Minimize squared array-factor error against a scalar or vector reference over `region`.
+"""
 struct MinFieldError{P, T} <: DirectObjective
     points::Vector{P}
     reference::Vector{T}
@@ -60,16 +108,6 @@ function MinFieldError(region::Region, reference::Number)
     return MinFieldError(region.points, fill(reference, length(region.points)))
 end
 
-# Minimize integrated power subject to Re(AF(θ₀)) = 1, which maximizes
-# directivity = |AF(θ₀)|² / ∫|AF(θ)|² dΩ. SOCP only.
-struct MaxDirectivity{P, R} <: DirectObjective
-    direction::P
-    region::R
-end
-
-MaxDirectivity(dir::Number, region::Region) = MaxDirectivity(direction(dir), region)
-MaxDirectivity(dir::NamedTuple{(:u, :v)}, region::Region) = MaxDirectivity(direction(dir), region)
-
 # Wrapper for array_factor when used in model building context (with JuMP variables)
 array_factor(model, array, points, weights, vars) = array_factor_reim(model, array, points, weights, vars)
 
@@ -80,14 +118,14 @@ function objective!(model, ::Feasible, pattern, array, weights, vars, formulatio
     return nothing
 end
 
-function gain_directions(objective::MaxGain, pattern)
+function af_directions(objective::MaxAF, pattern)
     isempty(objective.directions) && return [b.direction for b in pattern.beams]
     return objective.directions
 end
 
-function objective!(model, objective::MaxGain, pattern, array, weights, vars, formulation)
-    dirs = gain_directions(objective, pattern)
-    isempty(dirs) && error("MaxGain needs at least one direction.")
+function objective!(model, objective::MaxAF, pattern, array, weights, vars, formulation)
+    dirs = af_directions(objective, pattern)
+    isempty(dirs) && error("MaxAF needs at least one direction.")
     af_re, af_im = array_factor(model, array, dirs, weights, vars)
     @objective(model, Max, sum(af_re))
     return nothing
@@ -173,44 +211,19 @@ function objective!(model, objective::MinWeightedL1, pattern, array, weights, va
     return t
 end
 
-#=
-function objective!(model, ::MinActiveElements, pattern, array, weights, vars::SparseVariables, formulation::MILP)
-    @objective(model, Min, sum(vars.active))
-    return vars.active
-end
-
-function objective!(model, ::MinActiveElements, pattern, array, weights, vars, formulation)
-    error("MinActiveElements requires MILP variables.")
-end
-=#
-
-field_error_expression(re, im::Nothing, reference) = (re - real(reference))^2
-field_error_expression(re, im, reference) = (re - real(reference))^2 + (im - imag(reference))^2
+array_factor_error_expression(re, im::Nothing, reference) = (re - real(reference))^2
+array_factor_error_expression(re, im, reference) = (re - real(reference))^2 + (im - imag(reference))^2
 
 function objective!(model, objective::MinFieldError, pattern, array, weights, vars, formulation)
     af_re, af_im = array_factor(model, array, objective.points, weights, vars)
     @objective(model, Min, sum(
-        field_error_expression(af_re[i], imag_part(af_im, i), objective.reference[i])
+        array_factor_error_expression(af_re[i], imag_part(af_im, i), objective.reference[i])
         for i in eachindex(objective.points)))
     return nothing
 end
 
-function objective!(model, objective::MaxDirectivity, pattern, array, weights, vars, formulation::SOCP)
-    af_re, af_im = array_factor(model, array, [objective.direction], weights, vars)
-    @constraint(model, af_re[1] == 1.0)
-    paf_re, paf_im = array_factor(model, array, objective.region.points, weights, vars)
-    @objective(model, Min, pattern_power_expression(paf_re, paf_im))
-    return nothing
-end
-
-function objective!(model, ::MaxDirectivity, pattern, array, weights, vars, formulation)
-    error("MaxDirectivity requires SOCP formulation.")
-end
-
-objective_beam_directions(obj::MaxGain, pattern) = gain_directions(obj, pattern)
+objective_beam_directions(obj::MaxAF, pattern) = af_directions(obj, pattern)
 objective_beam_directions(::AbstractObjective, pattern) = AbstractDirection[]
 
-check_formulation(::MaxDirectivity, formulation) = formulation isa SOCP || error("MaxDirectivity requires SOCP.")
-#check_formulation(::MinActiveElements, formulation) = formulation isa MILP || error("MinActiveElements requires MILP.")
 check_formulation(obj::Union{MinPower, MinIntegratedPower, MinFieldError}, formulation) = formulation isa LP && error("$(typeof(obj)) has a quadratic objective, incompatible with LP.")
 check_formulation(::AbstractObjective, formulation) = nothing

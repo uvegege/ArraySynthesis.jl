@@ -1,10 +1,11 @@
 # MinL1
 
-Minimize the L1 norm of the optimization variables.
+Minimize a convex L1-type bound on the optimization variables.
 
 ## Syntax
 
 ```julia
+MinL1(sum_limit)
 MinL1(; sum_limit = nothing)
 ```
 
@@ -16,12 +17,11 @@ MinL1(; sum_limit = nothing)
 
 ## Description
 
-Introduces one auxiliary variable per optimization variable and minimizes their sum.
-This promotes sparse or low-amplitude excitations while keeping the problem linear
-when used with [`LP`](@ref "LP").
+Introduces one auxiliary variable per optimization variable and minimizes their sum. With [`LP`](@ref "LP") and [`QP`](@ref "QP"), these auxiliaries are imposed with linear inequalities. With [`SOCP`](@ref "SOCP"), complex pairs can be bounded with a second-order cone.
 
-`MinL1` is a direct objective. For stronger sparsity promotion through repeated
-reweighting, use [`IterativeReweightedL1`](@ref "IterativeReweightedL1").
+When `sum_limit` is provided, the model also imposes an upper bound on `sum(t)`.
+
+`MinL1` is a direct convex objective. It is not the sparse/thinned-array strategy. For active-element thinning through repeated reweighting, use [`IterativeReweightedL1`](@ref "IterativeReweightedL1").
 
 ## Example
 
@@ -29,16 +29,9 @@ reweighting, use [`IterativeReweightedL1`](@ref "IterativeReweightedL1").
 using ArraySynthesis; using ArraySynthesis: °, dB; using HiGHS
 
 array = uniform_linear_array(32, d = 0.5)
-p     = pattern(beam(0°),
-                sidelobes(region(-90°..(-5°), 1°), -25dB),
-                sidelobes(region(5°..90°,     1°), -25dB))
+p = pattern(beam(0°),
+            sidelobes(region(-90°..(-5°), 1°), -25dB),
+            sidelobes(region(5°..90°,     1°), -25dB))
 
 result = synthesize(array, p, MinL1(), ComplexWeights(), LP(), HiGHS.Optimizer)
 ```
-
-## Related
-
-**Sparse objectives:** [`MinWeightedL1`](@ref "MinWeightedL1"),
-[`IterativeReweightedL1`](@ref "IterativeReweightedL1")
-
-**Compatible formulation:** [`LP`](@ref "LP")

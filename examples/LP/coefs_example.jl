@@ -1,6 +1,5 @@
 using ArraySynthesis
 using ArraySynthesis: °, dB
-using GLMakie
 using LinearAlgebra
 using HiGHS
 
@@ -22,6 +21,7 @@ obj = MinSLL([sll_region1, sll_region2, sll_region3])
 coefs = ProgressivePhaseAmplitude(0)
 resultado1 = synthesize(array, p, obj, coefs, LP(), HiGHS.Optimizer)
 
+theta_vals = -π / 2:0.001:π / 2
 af_vals1 = [abs(array_factor(array, coefs, resultado1.weights, [ThetaDirection(θ)])[1]) for θ in theta_vals]
 af_db1 = 20 .* log10.(max.(af_vals1, 1e-12))
 
@@ -30,6 +30,7 @@ resultado2 = synthesize(array, p, obj, coefs2, LP(), HiGHS.Optimizer)
 af_vals2 = [abs(array_factor(array, coefs2, resultado2.weights, [ThetaDirection(θ)])[1]) for θ in theta_vals]
 af_db2 = 20 .* log10.(max.(af_vals2, 1e-12))
 
+using GLMakie
 fig = Figure()
 ax = Axis(fig[1,1], xlabel="θ (º)", ylabel="|AF| (dB)")
 lines!(ax, map(x->x*180/pi, theta_vals), af_db1, linewidth=2, label = "Progresssive Phase")

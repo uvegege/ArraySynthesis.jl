@@ -1,6 +1,5 @@
 using ArraySynthesis
 using ArraySynthesis: °, dB
-using GLMakie
 using LinearAlgebra
 using Random
 using Clarabel
@@ -81,6 +80,8 @@ mc_patterns_db = [
     for _ in 1:mc_trials
 ]
 
+
+using GLMakie
 fig = Figure()
 ax = Axis(fig[1, 1], xlabel = "θ (deg)", ylabel = "|AF| (dB)")
 

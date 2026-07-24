@@ -2,7 +2,6 @@ using ArraySynthesis
 using ArraySynthesis: °, dB
 using LinearAlgebra
 using HiGHS
-using ArraySynthesis: ..
 
 # Ng et al., "Flexible Array Synthesis via Quadratic Programming",
 # desired-pattern approximation style example.

@@ -1,6 +1,5 @@
 using ArraySynthesis
 using ArraySynthesis: °, dB
-using GLMakie
 using LinearAlgebra
 using HiGHS
 
@@ -24,6 +23,7 @@ af = abs.(array_factor(array, coef, result.weights, dirs))
 #af ./= maximum(af)
 af_db = 20 .* log10.(max.(af, 1e-12))
 
+using GLMakie
 fig = Figure()
 ax = Axis(fig[1, 1], xlabel = "θ (deg)", ylabel = "Normalized |AF| (dB)")
 lines!(ax, theta_vals ./ °, af_db, linewidth = 2, label = "MinIntegratedPower")

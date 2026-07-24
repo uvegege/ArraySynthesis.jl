@@ -1,6 +1,5 @@
 using ArraySynthesis
 using ArraySynthesis: °, dB
-using GLMakie
 using LinearAlgebra
 using HiGHS
 
@@ -21,6 +20,7 @@ theta_vals = -π/2:0.01:π/2
 af_vals = [abs(array_factor(array, coef, result.weights, [ThetaDirection(θ)])[1]) for θ in theta_vals]
 af_db = 20 .* log10.(max.(af_vals, 1e-12))
 
+using GLMakie
 fig = Figure()
 ax = Axis(fig[1,1], xlabel="θ (º)", ylabel="|AF| (dB)")
 lines!(ax, map(x->x * 180/pi, theta_vals), af_db, linewidth=2)

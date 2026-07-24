@@ -18,15 +18,11 @@ MultiPatternReweightedL1(; max_iter = 15, d0 = 1e-3, stable_iterations = 3)
 
 ## Description
 
-Extension of `IterativeReweightedL1` to reconfigurable arrays that must satisfy $K$
-independent patterns with a single physical aperture (same set of active elements).
-A shared L1 auxiliary variable couples all patterns in the sparsity objective; each
-pattern has independent weight variables optimized separately.
+Extension of `IterativeReweightedL1` to reconfigurable arrays that must satisfy $K$ independent patterns with a single physical aperture (same set of active elements). A shared L1 auxiliary variable couples all patterns in the sparsity objective; each pattern has independent weight variables optimized separately.
 
-Pass a **vector** of `Pattern` objects as the second argument to `synthesize`.
-The result is a `MultiPatternResult` with one weight vector per pattern.
+Pass a **vector** of `Pattern` objects as the second argument to `synthesize`. The result is a `MultiPatternResult` with one weight vector per pattern.
 
-## Literature
+## References
 
 This strategy follows the multiple-pattern iterative LP formulation in:
 
@@ -52,7 +48,7 @@ p2 = pattern(
     shaped_beam(region(rhombus((0.2, 0.2), 0.2), step = 2°), 1.0, ripple = -1dB),
     sidelobes(visible_region(rhombus((0.2, 0.2), 0.4); step = 4°, bandpass = 0.0), -24dB))
 
-obj    = MultiPatternReweightedL1(max_iter = 15)
+obj = MultiPatternReweightedL1(max_iter = 15)
 result = synthesize(array, [p1, p2], obj, ComplexWeights(), LP(), HiGHS.Optimizer)
 
 # Active elements: used in any of the K patterns
@@ -60,7 +56,3 @@ max_activity = [maximum(abs(result.weights[k][n]) for k in eachindex(result.weig
                 for n in eachindex(result.weights[1])]
 active = max_activity .> 1e-5
 ```
-
-## Related
-
-**Sparse objectives:** [`IterativeReweightedL1`](@ref "IterativeReweightedL1")

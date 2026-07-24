@@ -1,10 +1,7 @@
 using ArraySynthesis
 using ArraySynthesis: °, dB
-using GLMakie
 using LinearAlgebra
 using HiGHS
-
-
 
 beam_region = region(12.5°..37.5°, 1°)
 sll_region1 = region(-90°..6.5°, 1°)
@@ -23,6 +20,7 @@ coef2 = ConjugateSymmetricWeights()
 af_db1 = 20 .* log10.(max.([abs(array_factor(array, coef1, result_prog.weights, [ThetaDirection(θ)])[1]) for θ in theta_vals], 1e-12))
 af_db2 = 20 .* log10.(max.([abs(array_factor(array, coef2, result_cplx.weights, [ThetaDirection(θ)])[1]) for θ in theta_vals], 1e-12))
 
+using GLMakie
 fig = Figure()
 ax = Axis(fig[1,1], xlabel="θ (rad)", ylabel="|AF| (dB)")
 lines!(ax, theta_vals, af_db1, linewidth=2, label="Progressive phase")

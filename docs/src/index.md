@@ -22,12 +22,21 @@ beam_region = region(12.5°..37.5°, 1°)
 sll_region1 = region(-90°..6.5°, 1°)
 sll_region2 = region(43.5°..90°, 1°)
 
-p     = pattern(shaped_beam(beam_region, 1.0, ripple = -0.6dB))
-obj   = MinSLL(join_regions(sll_region1, sll_region2))
+p = pattern(shaped_beam(beam_region, 1.0, ripple = -0.6dB))
+obj = MinSLL(join_regions(sll_region1, sll_region2))
 array = symmetric_linear_array(32, d = 0.5)
 
 result = synthesize(array, p, obj, ConjugateSymmetricWeights(), LP(), HiGHS.Optimizer)
 ```
+
+## Documentation Map
+
+Start with [User Guide](@ref) for the five pieces of a synthesis problem:
+array, pattern, objective, excitation, and formulation.
+
+See [Pattern and Regions](@ref) for the pattern specification.
+
+The [Objectives](guide/objectives.md), [Excitations](guide/excitations.md), and [Formulations](guide/formulations.md) pages describe the main modeling choices.
 
 ## References
 

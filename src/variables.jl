@@ -1,18 +1,42 @@
 abstract type AbstractExcitationModel end
+"""
+Abstract supertype for optimization formulations.
+"""
 abstract type AbstractFormulation end
 
+"""
+    LP(; polygon_faces = 8)
+
+Linear-programming formulation. Complex magnitude bounds are approximated by a
+regular polygon with `polygon_faces` sides.
+"""
 struct LP <: AbstractFormulation
     polygon_faces::Int
 end
 LP(; polygon_faces::Int = 8) = LP(polygon_faces)
 
+"""
+    QP(; polygon_faces = 8)
+
+Quadratic-programming formulation with polygonal magnitude bounds.
+"""
 struct QP <: AbstractFormulation
     polygon_faces::Int
 end
 QP(; polygon_faces::Int = 8) = QP(polygon_faces)
 
+"""
+    SOCP()
+
+Second-order cone formulation using exact conic magnitude bounds.
+"""
 struct SOCP <: AbstractFormulation end
 
+"""
+    MILP(; max_active_elements = nothing, big_m = 10.0, polygon_faces = 8)
+
+Mixed-integer formulation for sparse active-element constraints.
+"""
 struct MILP <: AbstractFormulation
     max_active_elements::Union{Nothing, Int}
     big_m::Float64

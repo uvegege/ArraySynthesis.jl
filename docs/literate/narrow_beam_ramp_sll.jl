@@ -1,6 +1,6 @@
 # # Narrow beam with a ramp sidelobe mask
 #
-# This example uses `MaxGain` with explicit sidelobe constraints. The objective
+# This example uses `MaxAF` with explicit sidelobe constraints. The objective
 # maximizes the response in the look direction, while the mask controls what is
 # allowed elsewhere.
 
@@ -25,8 +25,8 @@ p = pattern(
     sidelobes(sl_region3, -40dB),
 )
 
-# With no explicit direction, `MaxGain()` uses the beam direction from `p`.
-result = synthesize(array, p, MaxGain(), coef, LP(), HiGHS.Optimizer)
+# With no explicit direction, `MaxAF()` uses the beam direction from `p`.
+result = synthesize(array, p, MaxAF(), coef, LP(), HiGHS.Optimizer)
 
 theta_vals = -π/2:0.001:π/2
 af_vals = [abs(array_factor(array, coef, result.weights, [ThetaDirection(θ)])[1]) for θ in theta_vals]

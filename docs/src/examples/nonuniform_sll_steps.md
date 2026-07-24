@@ -1,8 +1,6 @@
 # Two-level sidelobe mask
 
-This example follows the Tseng-Griffiths style iterative floor synthesis. The
-sidelobe envelope is not uniform: near sidelobes are forced lower than far
-sidelobes.
+This example follows the Tseng-Griffiths style iterative floor synthesis. The sidelobe envelope is not uniform: near sidelobes are forced lower than far sidelobes.
 
 ````julia
 using ArraySynthesis
@@ -14,8 +12,7 @@ array = uniform_linear_array(21, d = 0.5)
 coef = ComplexWeights()
 ````
 
-Each interval gets its own fixed level. Splitting the mask into regions makes
-the piecewise specification explicit.
+Each interval gets its own fixed level. Splitting the mask into regions makes the piecewise specification explicit.
 
 ````julia
 sll_far_left = region(ClosedInterval(-90°, -55.5°), 0.5°)
@@ -31,8 +28,7 @@ p = pattern(
 )
 ````
 
-`IterativeFloorSynthesis` repeatedly corrects the active sidelobe peaks until
-the envelope is reached.
+`IterativeFloorSynthesis` repeatedly corrects the active sidelobe peaks until the envelope is reached.
 
 ````julia
 obj = IterativeFloorSynthesis(ThetaDirection(0°); max_iter = 8, tol = 5e-3)
@@ -54,12 +50,9 @@ xlims!(ax, -90, 90)
 fig
 ````
 
-The documentation includes a precomputed result image, so this example is
-shown without being executed by Documenter.
+The documentation includes a precomputed result image, so this example is shown without being executed by Documenter.
 
 ![Two-level sidelobe mask](../assets/nonuniform_sll_steps.png)
 
 ---
-
-*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl).*
 

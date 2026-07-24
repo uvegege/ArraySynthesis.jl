@@ -1,10 +1,9 @@
 using ArraySynthesis
 using ArraySynthesis: °, dB
-using GLMakie
 using LinearAlgebra
 using Mosek
 using MosekTools
-using HiGHS
+#using HiGHS
 
 array = planar_array(20, 20, dx = 0.5, dy = 0.5)
 
@@ -29,10 +28,11 @@ dirs = [UVDirection(u, v) for u in U, v in V]
 AF = array_factor(array, coef, result.weights, dirs)
 af_vals = reshape(20 .* log10.(abs.(getindex.(AF, 1)) .+ 1e-12), length(U), length(V))
 
+using GLMakie
 fig = Figure()
 ax = Axis(fig[1,1], xlabel="u", ylabel="v")
-image!(ax, (-1,1), (-1,1), af_vals, colorrange=(-50, 0), colormap = parula_cm)
+image!(ax, (-1,1), (-1,1), af_vals, colorrange=(-50, 0))
 Colorbar(fig[1,3], colorrange=(-60, 0)); fig
 ax2 = Axis3(fig[1,2])
-surface!(ax2, U, V, af_vals, colormap = parula_cm)
+surface!(ax2, U, V, af_vals)
 fig

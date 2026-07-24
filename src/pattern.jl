@@ -1,16 +1,38 @@
+"""
+Abstract supertype for all direction parameterizations.
+"""
 abstract type AbstractDirection end
 
+"""
+    ThetaDirection(θ)
+
+One-dimensional angular direction. Angles are in radians; use `°` for degrees.
+"""
 struct ThetaDirection{T} <: AbstractDirection
     θ::T
 end
 
+"""
+    UVDirection(u, v)
+
+Direction in the visible `(u, v)` plane.
+"""
 struct UVDirection{T} <: AbstractDirection
     u::T
     v::T
 end
 
+"""
+Union alias for `ThetaDirection` and `UVDirection`.
+"""
 const Direction{T} = Union{ThetaDirection{T}, UVDirection{T}}
 
+"""
+    Region(points, name)
+
+Named collection of sampled directions used for masks, shaped beams, or
+integration regions.
+"""
 struct Region{P}
     points::Vector{P}
     name::Symbol
@@ -18,31 +40,63 @@ end
 
 abstract type AbstractPatternItem{P,T} end
 
+"""
+    Beam(direction, gain)
+
+Main-beam constraint at `direction` with the requested linear `gain`.
+Prefer the `beam` constructor in user code.
+"""
 struct Beam{P, T} <: AbstractPatternItem{P,T}
     direction::P
     gain::T
 end
 
+"""
+    ShapedBeam(region, target, ripple)
+
+Shaped-beam mask over a sampled `Region`. Prefer `shaped_beam` in user code.
+"""
 struct ShapedBeam{P, T} <: AbstractPatternItem{P,T}
     region::Region{P}
     target::Vector{T}
     ripple::T
 end
 
+"""
+    NullPoint(direction, level)
+
+Null constraint at one direction. Prefer `null` in user code.
+"""
 struct NullPoint{P, T} <: AbstractPatternItem{P,T}
     direction::P
     level::T
 end
 
+"""
+    Nulls(points)
+
+Collection of null constraints. Prefer `nulls` in user code.
+"""
 struct Nulls{P,T} <: AbstractPatternItem{P,T}
     points::Vector{NullPoint{P,T}}
 end
 
+"""
+    SideLobeRegion(region, upper)
+
+Sidelobe upper mask over a sampled `Region`. Prefer `sidelobes` in user code.
+"""
 struct SideLobeRegion{P, T} <: AbstractPatternItem{P,T}
     region::Region{P}
     upper::Vector{T}
 end
 
+"""
+    Pattern(beams, shaped_beams, null_directions, sidelobe_regions)
+
+Container for all pattern constraints passed to `synthesize`.
+Prefer the flexible `pattern` constructor in user code.
+"""
 struct Pattern{P, T}
     beams::Vector{Beam{P, T}}
     shaped_beams::Vector{ShapedBeam{P, T}}
@@ -50,34 +104,28 @@ struct Pattern{P, T}
     sidelobe_regions::Vector{SideLobeRegion{P, T}}
 end
 
-#=
-additems!(p) = p
+"""
+    pattern(items...)
 
-function additems!(p, item, rest...)
-    additem!(p, item)
-    additems!(p, rest...)
-end
+Build a `Pattern` from any mixture of `beam`, `shaped_beam`, `null`, `nulls`,
+and `sidelobes` items.
 
-additem!(p, x::Beam) = push!(p.beams, x)
-additem!(p, x::ShapedBeam) = push!(p.shaped_beams, x)
-additem!(p, x::NullPoint) = push!(p.null_directions, x)
-additem!(p, x::Nulls) = append!(p.null_directions, x.points)
-additem!(p, x::SideLobeRegion) = push!(p.sidelobe_regions, x)
+This is the main user-facing pattern builder: items can be written in the order
+that is most natural for the synthesis problem, and `pattern` sorts them into
+the internal beam, shaped-beam, null, and sidelobe collections. All items must use
+compatible direction and numeric types.
 
-function pattern(items::AbstractPatternItem{P,T}...) where {P,T}
-    p = Pattern{P,T}(
-        Beam{P,T}[],
-        ShapedBeam{P,T}[],
-        NullPoint{P,T}[],
-        SideLobeRegion{P,T}[]
-    )
+# Examples
 
-    additems!(p, items...)
-
-    return p
-end
-=#
-
+```julia
+p = pattern(
+    beam(0°),
+    nulls([-30°, 30°]),
+    sidelobes(region(-90°..-10°, 1°), -25dB),
+    sidelobes(region(10°..90°, 1°), theta_ramp(10°, -30dB, 90°, -20dB)),
+)
+```
+"""
 function pattern(items::AbstractPatternItem{P, T}...) where {P, T}
     beams = Beam{P, T}[]
     shaped_beams = ShapedBeam{P, T}[]
@@ -95,37 +143,88 @@ function pattern(items::AbstractPatternItem{P, T}...) where {P, T}
         elseif item isa SideLobeRegion{P, T}
             push!(sidelobe_regions, item)
         else
-            error("¿?")
+            error("wrong item")
         end
     end
     return Pattern(beams, shaped_beams, null_points, sidelobe_regions)
 end
 
+"""
+    ClosedInterval(a, b)
+    a..b
+
+Closed interval helper used to create angular regions.
+"""
 struct ClosedInterval{T}
     a::T
     b::T
 end
 
+"""
+    a..b
+
+Create a `ClosedInterval(a, b)`.
+"""
 ..(a, b) = ClosedInterval(a, b)
 
 const ° = pi / 180
 struct dB end
 Base.:*(x, ::Type{dB}) = 10^(x/20)
 
+"""
+    direction(x)
+
+Convert numbers and `(u = ..., v = ...)` named tuples into direction objects.
+"""
 direction(x::ThetaDirection) = x
 direction(x::UVDirection) = x
 direction(x::Number) = ThetaDirection(x)
 direction(x::NamedTuple{(:u, :v)}) = UVDirection(x.u, x.v)
 
+"""
+    θ(x)
+
+Construct a `ThetaDirection`.
+"""
 θ(x) = ThetaDirection(x)
+
+"""
+    uv(θ, ϕ)
+
+Convert spherical angles to a `UVDirection`.
+"""
 uv(θ, ϕ) = UVDirection(sin(θ)*cos(ϕ), sin(θ)*sin(ϕ))
 @inline w(u, v) = sqrt(1 - u^2 - v^2)
 
+"""
+    beam(dir; gain = 1.0)
+
+Create a main-beam constraint at `dir`.
+"""
 beam(dir; gain = 1.0) = Beam(direction(dir), gain)
+
+"""
+    null(dir; level = -60.0dB)
+
+Create a null constraint at `dir` with the given maximum level.
+"""
 null(dir; level = -60.0dB) = NullPoint(direction(dir), level)
+
+"""
+    nulls(dirs; level = -60.0dB)
+
+Create null constraints for all directions in `dirs`.
+"""
 nulls(dirs; level = -60.0dB) = Nulls([null(d; level) for d in dirs])
 
 
+"""
+    region(interval; npoints = 60, name = :region)
+    region(interval, step; name = :region)
+
+Sample a one-dimensional angular interval into a `Region` of `ThetaDirection`
+points.
+"""
 function region(r::ClosedInterval; npoints = 60, name = :region)
     points = [θ(x) for x in range(r.a, r.b, npoints)]
     return Region(points, name)
@@ -137,6 +236,15 @@ function region(r::ClosedInterval, step; name = :region)
 end
 
 
+"""
+    shaped_beam(region, target; ripple = 1.0dB, normalize = false)
+
+Create a shaped-beam constraint over `region`.
+
+`target` may be a scalar, a vector with one value per region point, or a
+function evaluated at each point. When `normalize` is true, target values are
+scaled by their maximum absolute value.
+"""
 function shaped_beam(region::Region, target::F; ripple = 1.0dB, normalize = true) where F <: Function
     values = target.(region.points)
     if normalize
@@ -164,6 +272,14 @@ function shaped_beam(region::Region, target::Number; ripple = 1.0dB)
 end
 
 
+"""
+    sidelobes(region, upper = -20dB)
+
+Create an upper sidelobe mask over `region`.
+
+`upper` may be a scalar, a vector with one value per region point, or a
+function evaluated at each point.
+"""
 function sidelobes(region::Region, upper = -20dB)
     values = evaluate_mask(upper, region)
     return SideLobeRegion(region, values)
@@ -179,6 +295,11 @@ function evaluate_mask(v::AbstractVector, region)
     return collect(v)
 end
 
+"""
+    outside(intervals...; limits = -90°..90°)
+
+Return the complementary closed intervals inside `limits`.
+"""
 function outside(r::ClosedInterval; limits = -90°..90°)
     regions = ClosedInterval[]
     if r.a > limits.a
@@ -227,6 +348,11 @@ function outside(intervals::AbstractVector{<:ClosedInterval}; limits = -90°..90
     return regions
 end
 
+"""
+    join_regions(x, y)
+
+Concatenate two sampled regions into a single `Region`.
+"""
 function join_regions(x, y)
     Region(vcat(x.points, y.points), x.name)
 end

@@ -20,15 +20,11 @@ IterativeFloorSynthesis(direction; sll = -30dB, max_iter = 15, tol = 1e-4, stabl
 
 ## Description
 
-Implements a Tseng–Griffiths-style iterative peak correction algorithm for prescribed
-sidelobe envelopes. At each step, the highest sidelobe peak in the current solution is
-identified and a linear floor constraint is added to the model. The process repeats
-until the SLL target is reached or no further improvement occurs.
+Implements a Tseng–Griffiths style iterative peak correction algorithm for prescribed sidelobe envelopes. At each step, the highest sidelobe peak in the current solution is identified and a linear floor constraint is added to the model. The process repeats until the SLL target is reached or no further improvement occurs.
 
-The sidelobe floor constraints grow with each iteration, increasing model size.
-Requires `QP`.
+The sidelobe floor constraints grow with each iteration, increasing model size. Requires `QP`.
 
-## Literature
+## References
 
 This strategy follows the linearly constrained least-squares peak-correction method in:
 
@@ -42,16 +38,9 @@ This strategy follows the linearly constrained least-squares peak-correction met
 using ArraySynthesis; using ArraySynthesis: °, dB; using HiGHS
 
 array = uniform_linear_array(20, d = 0.5)
-p     = pattern(sidelobes(region(-90°..34°, 0.5°), -40dB),
-                sidelobes(region(74°..90°,  0.5°), -40dB))
-obj   = IterativeFloorSynthesis(ThetaDirection(50°); sll = -40dB, max_iter = 8)
+p = pattern(sidelobes(region(-90°..34°, 0.5°), -40dB),
+            sidelobes(region(74°..90°,  0.5°), -40dB))
+obj = IterativeFloorSynthesis(ThetaDirection(50°); sll = -40dB, max_iter = 8)
 
 result = synthesize(array, p, obj, ComplexWeights(), QP(), HiGHS.Optimizer)
 ```
-
-## Related
-
-**Related objectives:** [`IterativePatternLeastSquares`](@ref "IterativePatternLeastSquares"),
-[`MinSLL`](@ref "MinSLL")
-
-**Required formulation:** [`QP`](@ref "QP")

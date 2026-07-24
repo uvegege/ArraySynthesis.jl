@@ -44,11 +44,11 @@ module ArraySynthesis
     export AbstractFormulation, LP, QP, SOCP, MILP
 
     export AbstractObjective, DirectObjective
-    export Feasible, MaxGain, MinPower, MinSLL, MinIntegratedPower
-    export MinL1, MinWeightedL1, MinFieldError, MaxDirectivity
+    export Feasible, MaxAF, MinPower, MinSLL, MinIntegratedPower
+    export MinL1, MinWeightedL1, MinFieldError
 
     export SynthesisMethod
-    export IterativeFloorSynthesis, IterativePatternLeastSquares, IterativeReweightedL1
+    export IterativeFloorSynthesis, IterativeReweightedL1
     export MultiPatternReweightedL1
 
     export SynthesisResult, IterativeSynthesisResult, MultiPatternResult

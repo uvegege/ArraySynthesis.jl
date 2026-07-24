@@ -1,8 +1,6 @@
 # Narrow beam with a ramp sidelobe mask
 
-This example uses `MaxGain` with explicit sidelobe constraints. The objective
-maximizes the response in the look direction, while the mask controls what is
-allowed elsewhere.
+This example uses `MaxAF` with explicit sidelobe constraints. The objective maximizes the response in the look direction, while the mask controls what is allowed elsewhere.
 
 ````julia
 using ArraySynthesis
@@ -14,8 +12,7 @@ array = uniform_linear_array(20, d = 0.5)
 coef = ComplexWeights()
 ````
 
-The main beam is a single look direction. The middle sidelobe region uses a
-functional mask, so the allowed level changes with angle.
+The main beam is a single look direction. The middle sidelobe region uses a functional mask, so the allowed level changes with angle.
 
 ````julia
 sl_region1 = region(ClosedInterval(-90°, -24°), 1°)
@@ -30,10 +27,10 @@ p = pattern(
 )
 ````
 
-With no explicit direction, `MaxGain()` uses the beam direction from `p`.
+With no explicit direction, `MaxAF()` uses the beam direction from `p`.
 
 ````julia
-result = synthesize(array, p, MaxGain(), coef, LP(), HiGHS.Optimizer)
+result = synthesize(array, p, MaxAF(), coef, LP(), HiGHS.Optimizer)
 
 theta_vals = -π/2:0.001:π/2
 af_vals = [abs(array_factor(array, coef, result.weights, [ThetaDirection(θ)])[1]) for θ in theta_vals]
@@ -47,12 +44,10 @@ xlims!(ax, -90, 90)
 fig
 ````
 
-The documentation includes a precomputed result image, so this example is
-shown without being executed by Documenter.
+The documentation includes a precomputed result image, so this example is shown without being executed by Documenter.
 
 ![Narrow beam with ramp sidelobe mask](../assets/narrow_beam_ramp_sll.png)
 
 ---
 
-*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl).*
 

@@ -1,8 +1,6 @@
 # Sparse multipattern array
 
-This example synthesizes two different planar patterns using a shared active
-element support. Each pattern has its own optimized weights, but
-`MultiPatternReweightedL1` promotes the same physical elements being active.
+This example synthesizes two different planar patterns using a shared active element support. Each pattern has its own optimized weights, but `MultiPatternReweightedL1` promotes the same physical elements being active.
 
 ````julia
 using ArraySynthesis
@@ -85,6 +83,4 @@ shown without being executed by Documenter.
 ![Sparse multipattern array](../assets/sparse_multipattern.png)
 
 ---
-
-*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl).*
 

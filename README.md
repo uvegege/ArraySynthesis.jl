@@ -24,7 +24,7 @@ beam_region = region(12.5°..37.5°, 1°)
 sll_region1 = region(-90°..6.5°, 1°)
 sll_region2 = region(43.5°..90°, 1°)
 
-p   = pattern(shaped_beam(beam_region, 1.0, ripple = -0.6dB))
+p = pattern(shaped_beam(beam_region, 1.0, ripple = -0.6dB))
 obj = MinSLL(join_regions(sll_region1, sll_region2))
 array = symmetric_linear_array(32, d = 0.5)
 

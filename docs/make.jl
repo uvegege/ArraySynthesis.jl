@@ -40,3 +40,9 @@ makedocs(
     remotes   = nothing,
     warnonly  = [:docs_block, :cross_references],
 )
+
+deploydocs(
+    repo = "github.com/uvegege/ArraySynthesis.jl.git",
+    devbranch = "main",
+    forcepush = true
+)

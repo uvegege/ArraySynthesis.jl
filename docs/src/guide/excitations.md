@@ -11,7 +11,7 @@ Use this page to choose the excitation parametrization. For exact constructor si
 | [`ComplexWeights`](@ref "ComplexWeights") | `ArrayGeometry` | Complex weights | General unconstrained synthesis |
 | [`RealWeights`](@ref "RealWeights") | `ArrayGeometry` | Real weights | Fixed-phase or amplitude-only feeding |
 | [`ConjugateSymmetricWeights`](@ref "ConjugateSymmetricWeights") | `SymmetricArray` | Complex half-array weights | Real array factor with maximum flexibility |
-| [`ProgressivePhaseAmplitude`](@ref "ProgressivePhaseAmplitude") | Any array | Real amplitudes with fixed phase gradient | Steered beams with known phase progression |
+| [`ProgressivePhaseAmplitude`](@ref "ProgressivePhaseAmplitude") | Any array | Real amplitudes with fixed phase gradient | Steered beams |
 
 ## Real Array Factors
 

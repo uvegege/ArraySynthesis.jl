@@ -1,5 +1,7 @@
 # ArraySynthesis.jl
 
+[![Documentation](https://img.shields.io/badge/docs-stable-blue.svg)](https://uvegege.github.io/ArraySynthesis.jl/)
+
 A Julia package for antenna array factor synthesis via convex optimization.
 Supports LP, QP, and SOCP formulations with multiple solvers through JuMP.
 

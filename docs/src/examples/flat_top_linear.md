@@ -33,7 +33,7 @@ obj = MinSLL(sll_region)
 result_cplx = synthesize(array, p, obj, ConjugateSymmetricWeights(), LP(), HiGHS.Optimizer)
 ````
 
-The same geometry can also be synthesized with a fixed progressive phase reference. This is useful when the phase center is known a priori.
+The same geometry can also be synthesized with a fixed progressive phase reference.
 
 ````julia
 phase = ProgressivePhaseAmplitude(25°)

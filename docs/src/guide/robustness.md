@@ -57,4 +57,4 @@ more conservative direct sum.
 
 This implementation is SOCP-only because the correction uses ``\|w\|_2``. Calling `synthesize(...; robustness = rob)` with `LP()` or `QP()` raises an error.
 
-Deep nulls and tight sidelobe masks can become infeasible when the uncertainty margin is larger than the available bound. That is expected: robust synthesis is trading nominal performance for certified margin.
+Deep nulls and tight sidelobe masks can become infeasible when the uncertainty margin is larger than the available bound.

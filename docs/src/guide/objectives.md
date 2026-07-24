@@ -6,7 +6,7 @@ Use this page to choose the objective. For exact constructor signatures and argu
 
 ## Choosing an Objective
 
-| Goal | Objective | Typical formulation |
+| Goal | Objective | Required formulation |
 |---|---|---|
 | Check feasibility only | [`Feasible`](@ref "Feasible") | `LP` |
 | Minimize peak sidelobe level | [`MinSLL`](@ref "MinSLL") | `LP` |

@@ -11,9 +11,9 @@ signatures, see the [API Reference](@ref).
 
 | Formulation | Modulus constraint | Objective type | Typical solver |
 |---|---|---|---|
-| [`LP`](@ref "LP") | Polyhedral, linear | Linear | HiGHS, Mosek |
-| [`QP`](@ref "QP") | Polyhedral, linear | Linear or quadratic | HiGHS, Mosek |
-| [`SOCP`](@ref "SOCP") | Exact second-order cone | Linear or quadratic | Clarabel, Mosek |
+| [`LP`](@ref "LP") | Linear | Linear | HiGHS |
+| [`QP`](@ref "QP") | Linear | Linear or quadratic | HiGHS |
+| [`SOCP`](@ref "SOCP") | Exact second-order cone | Linear or quadratic | Clarabel |
 
 Use [`LP`](@ref "LP") as the default for linear objectives, especially when the array
 factor is real. Use [`QP`](@ref "QP") when the objective has a quadratic term, such as
@@ -27,7 +27,7 @@ formulations: exact and linear.
 
 ## Formulation Notes
 
-[`LP`](@ref "LP") is the default for linear objectives and is often the fastest route for one-dimensional examples. For complex array factors, magnitude constraints are approximated with a polygon controlled by `polygon_faces`.
+[`LP`](@ref "LP") is the default for linear objectives. For complex array factors, magnitude constraints are approximated with a polygon controlled by `polygon_faces`.
 
 [`QP`](@ref "QP") uses the same polygonal magnitude constraints as `LP`, but allows quadratic objectives such as [`MinPower`](@ref "MinPower"), [`MinIntegratedPower`](@ref "MinIntegratedPower"), and [`MinFieldError`](@ref "MinFieldError").
 

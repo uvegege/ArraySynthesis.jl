@@ -84,14 +84,19 @@ function filter_beam_objectives(pattern, objective)
     return Pattern(beams, pattern.shaped_beams, pattern.null_directions, pattern.sidelobe_regions)
 end
 
-function solve_model(array, pattern, objective::DirectObjective, weights, formulation, solver; solver_options = nothing, robustness = nothing)
+function apply_solver_options!(model, solver_options)
+    solver_options === nothing && return nothing
+    for (key, value) in solver_options
+        set_optimizer_attribute(model, string(key), value)
+    end
+    return nothing
+end
+
+function solve_model(array, pattern, objective::DirectObjective, weights, formulation, solver; solver_options = nothing, robustness = nothing, time_limit = nothing)
     check_formulation(objective, formulation)
     model = Model(solver)
-    if !isnothing(solver_options)
-        for (key, value) in solver_options
-            set_optimizer_attribute(model, string(key), value)
-        end
-    end
+    apply_solver_options!(model, solver_options)
+    time_limit === nothing || set_time_limit_sec(model, time_limit)
     set_silent(model)
     vars = variables!(model, array, weights, formulation)
     robust_margin = robust_margin!(model, array, weights, vars, formulation, robustness)
@@ -122,9 +127,9 @@ Use `solver_options` to pass optimizer attributes. Use `robustness = robust(...)
 to tighten supported constraints against tolerance margins; this requires
 `SOCP`.
 """
-function synthesize(array, pattern, objective::DirectObjective, weights, formulation, solver; solver_options = nothing, robustness = nothing)
+function synthesize(array, pattern, objective::DirectObjective, weights, formulation, solver; solver_options = nothing, robustness = nothing, time_limit = nothing)
     weights = resolve_phase_reference(weights, pattern)
-    model, vars, _ = solve_model(array, pattern, objective, weights, formulation, solver; solver_options = solver_options, robustness = robustness)
+    model, vars, _ = solve_model(array, pattern, objective, weights, formulation, solver; solver_options = solver_options, robustness = robustness, time_limit = time_limit)
     is_solved_and_feasible(model) || @warn "Synthesis failed: $(termination_status(model))"
     return SynthesisResult(extract_weights(vars), termination_status(model), objective_value(model), model)
 end

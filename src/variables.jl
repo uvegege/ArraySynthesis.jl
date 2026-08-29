@@ -112,10 +112,9 @@ function variables!(model, array, weights::QuantizedAmplitude, formulation::MILP
     levels = weights.levels
     M = length(levels)
 
-    M >= 1 || error("QuantizedAmplitude needs at least one level.")
+    M >= 2 || error("QuantizedAmplitude needs at least two levels.")
     #all(>=(0), levels) || error("QuantizedAmplitude levels must be nonnegative.") #TODO CHECK
 
-    # Check if levels are uniform. 
     lvls = sort(collect(Float64, levels))
     Δ = lvls[2] - lvls[1]
     are_uniform = all(k -> isapprox(lvls[k], lvls[1] + (k - 1) * Δ; atol = 1e-9), eachindex(lvls))
@@ -125,6 +124,22 @@ function variables!(model, array, weights::QuantizedAmplitude, formulation::MILP
         K = length(lvls) - 1
         q = @variable(model, [1:N], integer = true, lower_bound = 0, upper_bound = K)
         return AmplitudeVariables([lmin + Δ * q[n] for n in 1:N])
+    end
+
+    if are_uniform && weights.relative
+        isapprox(maximum(abs, levels), 1.0) || error("Relative QuantizedAmplitude levels must be normalized so their maximum absolute value is 1.0.")
+        K = length(lvls) - 1
+        U = formulation.big_m # TODO: No estoy seguro de si este valor es el más razonable
+        n_B = ceil(Int, log2(K + 1))
+        powers = [2^(b - 1) for b in 1:n_B]
+        y = @variable(model, [1:N, 1:n_B], Bin)
+        @constraint(model, [n in 1:N], sum(powers[b] * y[n, b] for b in 1:n_B) <= K)
+        V = @variable(model, lower_bound = 0, upper_bound = U)
+        s = @variable(model, [1:N, 1:n_B], lower_bound = 0)
+        @constraint(model, [n in 1:N, b in 1:n_B], s[n, b] <= U * y[n, b])
+        @constraint(model, [n in 1:N, b in 1:n_B], s[n, b] <= V)
+        @constraint(model, [n in 1:N, b in 1:n_B], s[n, b] >= V - U * (1 - y[n, b]))
+        return AmplitudeVariables([lmin * V + Δ * sum(powers[b] * s[n, b] for b in 1:n_B) for n in 1:N])
     end
 
     z = @variable(model, [1:N, 1:M], Bin)
@@ -137,8 +152,8 @@ function variables!(model, array, weights::QuantizedAmplitude, formulation::MILP
     isapprox(maximum(abs, levels), 1.0) || error("Relative QuantizedAmplitude levels must be normalized so their maximum is 1.0.")
 
     big_m = formulation.big_m
-    V = @variable(model, lower_bound = 0) #V = @variable(model, 0 <= V <= big_m)
-    v = @variable(model, [1:N, 1:M], lower_bound = 0) #v = @variable(model, [1:N, 1:M] >= 0)
+    V = @variable(model, lower_bound = 0) 
+    v = @variable(model, [1:N, 1:M], lower_bound = 0)
 
     @constraint(model, [n in 1:N, k in 1:M], v[n, k] <= big_m * z[n, k])
     @constraint(model, [n in 1:N], sum(v[n, k] for k in 1:M) == V)

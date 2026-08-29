@@ -106,115 +106,6 @@ end
 
 variables!(model, array, ::QuantizedAmplitude, formulation::Union{LP, QP, SOCP}) = error("QuantizedAmplitude requires the MILP/MISOCP formulation.")
 
-#=
-function variables!(model, array, weights::QuantizedAmplitude, formulation::MILP)
-    N = size(array.positions, 2)
-
-    levels = sort(collect(weights.levels))
-    M = length(levels)
-
-    M >= 1 || error("QuantizedAmplitude needs at least one level.")
-
-    # Trivial single-level case.
-    if M == 1
-        if weights.relative
-            V = @variable(
-                model,
-                lower_bound = 0,
-                upper_bound = formulation.big_m,
-            )
-            return AmplitudeVariables([levels[1] * V for _ in 1:N])
-        else
-            return AmplitudeVariables(fill(levels[1], N))
-        end
-    end
-
-    # Compact formulation requires uniformly spaced levels.
-    Δ = levels[2] - levels[1]
-
-    all(k -> isapprox(levels[k], levels[1] + (k - 1) * Δ), 1:M) ||
-        error("Compact QuantizedAmplitude requires uniformly spaced levels.")
-
-    K = M - 1
-    lmin = levels[1]
-
-    if !weights.relative
-        q = @variable(
-            model,
-            [1:N],
-            integer = true,
-            lower_bound = 0,
-            upper_bound = K,
-        )
-
-        return AmplitudeVariables([
-            lmin + Δ * q[n]
-            for n in 1:N
-        ])
-    end
-
-    isapprox(maximum(abs, levels), 1.0) ||
-        error(
-            "Relative QuantizedAmplitude levels must be normalized " *
-            "so their maximum absolute value is 1.0."
-        )
-
-    U = formulation.big_m
-
-    # q ∈ {0, ..., K} needs ceil(log2(K + 1)) binary variables.
-    B = ceil(Int, log2(K + 1))
-    powers = [2^(b - 1) for b in 1:B]
-
-    y = @variable(model, [1:N, 1:B], binary = true)
-
-    # Binary encoding may represent numbers larger than K.
-    @constraint(
-        model,
-        [n in 1:N],
-        sum(powers[b] * y[n, b] for b in 1:B) <= K
-    )
-
-    # Global free scale.
-    # A finite upper bound is required to linearize V * y[n,b].
-    V = @variable(
-        model,
-        lower_bound = 0,
-        upper_bound = U,
-    )
-
-    # s[n,b] = V * y[n,b]
-    s = @variable(
-        model,
-        [1:N, 1:B],
-        lower_bound = 0,
-    )
-
-    @constraint(
-        model,
-        [n in 1:N, b in 1:B],
-        s[n, b] <= U * y[n, b]
-    )
-
-    @constraint(
-        model,
-        [n in 1:N, b in 1:B],
-        s[n, b] <= V
-    )
-
-    @constraint(
-        model,
-        [n in 1:N, b in 1:B],
-        s[n, b] >= V - U * (1 - y[n, b])
-    )
-
-    return AmplitudeVariables([
-        lmin * V +
-        Δ * sum(powers[b] * s[n, b] for b in 1:B)
-        for n in 1:N
-    ])
-end
-=#
-
 function variables!(model, array, weights::QuantizedAmplitude, formulation::MILP)
     N = size(array.positions, 2)
 
@@ -222,10 +113,21 @@ function variables!(model, array, weights::QuantizedAmplitude, formulation::MILP
     M = length(levels)
 
     M >= 1 || error("QuantizedAmplitude needs at least one level.")
-    #all(>=(0), levels) || error("QuantizedAmplitude levels must be nonnegative.")
+    #all(>=(0), levels) || error("QuantizedAmplitude levels must be nonnegative.") #TODO CHECK
+
+    # Check if levels are uniform. 
+    lvls = sort(collect(Float64, levels))
+    Δ = lvls[2] - lvls[1]
+    are_uniform = all(k -> isapprox(lvls[k], lvls[1] + (k - 1) * Δ; atol = 1e-9), eachindex(lvls))
+
+    if are_uniform && !weights.relative
+        lmin = lvls[1]
+        K = length(lvls) - 1
+        q = @variable(model, [1:N], integer = true, lower_bound = 0, upper_bound = K)
+        return AmplitudeVariables([lmin + Δ * q[n] for n in 1:N])
+    end
 
     z = @variable(model, [1:N, 1:M], Bin)
-
     @constraint(model, [n in 1:N], sum(z[n, k] for k in 1:M) == 1)
 
     if !weights.relative

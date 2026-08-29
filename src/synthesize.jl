@@ -53,6 +53,8 @@ function resolve_phase_reference(weights::ProgressivePhaseAmplitude, pattern::Pa
     return weights
 end
 
+resolve_phase_reference(weights::QuantizedAmplitude, pattern) = QuantizedAmplitude(weights.levels; β = resolve_phase_reference(as_ppa(weights), pattern).β, relative = weights.relative)
+
 resolve_phase_reference(weights, pattern) = weights
 
 """
@@ -187,6 +189,9 @@ function array_factor(array::SymmetricArray, weights::ProgressivePhaseAmplitude,
     a = real.(w)
     return [sum(A_cos[m, n] * a[n] for n in axes(A_cos, 2)) for m in eachindex(pts)]
 end
+
+array_factor(array::ArrayGeometry, weights::QuantizedAmplitude, w, pts) = array_factor(array, as_ppa(weights), w, pts)
+array_factor(array::SymmetricArray, weights::QuantizedAmplitude, w, pts) = array_factor(array, as_ppa(weights), w, pts)
 
 # IterativeFloorSynthesis helpers
 # Orchard-Elliott-Stern peak correction. Only supported for ArrayGeometry (full array).

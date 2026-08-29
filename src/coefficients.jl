@@ -39,3 +39,12 @@ end
 
 # Constructor without arguments: β will be extracted from pattern
 ProgressivePhaseAmplitude() = ProgressivePhaseAmplitude(nothing)
+
+struct QuantizedAmplitude{L,B} <: AbstractExcitation
+    levels::L
+    β::B # Like ProgressivePhaseAmplitude
+    relative::Bool
+end
+
+QuantizedAmplitude(levels::AbstractVector; β = nothing, relative = false) = QuantizedAmplitude(collect(Float64, levels), β, relative)
+as_ppa(w::QuantizedAmplitude) = ProgressivePhaseAmplitude(w.β)

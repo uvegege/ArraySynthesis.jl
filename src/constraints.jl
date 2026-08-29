@@ -15,6 +15,7 @@ imag_part(im, i) = im[i]
 
 steering_matrix_for(array, points, weights) = steering_matrix(array, direction_matrix(points))
 steering_matrix_for(array, points, weights::ProgressivePhaseAmplitude) = steering_matrix(array, direction_matrix(points) .- phase_direction(weights.β))
+steering_matrix_for(array, points, weights::QuantizedAmplitude) = steering_matrix_for(array, points, as_ppa(weights))
 
 function array_factor_reim_from_steering(A, ::ComplexWeights, vars)
     A_re = real.(A); A_im = imag.(A)
@@ -66,11 +67,14 @@ function array_factor_reim_from_steering(A::Tuple, ::ProgressivePhaseAmplitude, 
     return A_cos * vars.a, nothing
 end
 
+array_factor_reim_from_steering(A, weights::QuantizedAmplitude, vars) = array_factor_reim_from_steering(A, as_ppa(weights), vars)
+
 function array_factor_reim(model, array::SymmetricArray, points, weights::ProgressivePhaseAmplitude, vars::AmplitudeVariables)
     A = steering_matrix_for(array, points, weights)
     return array_factor_reim_from_steering(A, weights, vars)
 end
 
+array_factor_reim(model, array, points, weights::QuantizedAmplitude, vars) = array_factor_reim(model, array, points, as_ppa(weights), vars)
 
 phase_direction(p::ThetaDirection) = (sin(p.θ), 0.0, cos(p.θ))
 phase_direction(β::UVDirection) = (β.u, β.v, sqrt(1.0 - β.u^2 - β.v^2))
@@ -217,8 +221,8 @@ shaped_reference_from_steering(A, target, im) = phase_retrieve(A, target)
 
 
 reference_matrix(array, points, weights) = steering_matrix(array, direction_matrix(points))
-
 reference_matrix(array, points, weights::ProgressivePhaseAmplitude) = steering_matrix(array, direction_matrix(points) .- phase_direction(weights.β))
+reference_matrix(array, points, weights::QuantizedAmplitude) = reference_matrix(array, points, as_ppa(weights))
 
 
 function phase_retrieve(A, target; iterations = 100)

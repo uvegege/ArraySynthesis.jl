@@ -190,11 +190,11 @@ function array_factor(array::SymmetricArray, weights::ProgressivePhaseAmplitude,
     return [sum(A_cos[m, n] * a[n] for n in axes(A_cos, 2)) for m in eachindex(pts)]
 end
 
-array_factor(array::ArrayGeometry, weights::QuantizedAmplitude, w, pts) = array_factor(array, as_ppa(weights), w, pts)
-array_factor(array::SymmetricArray, weights::QuantizedAmplitude, w, pts) = array_factor(array, as_ppa(weights), w, pts)
+array_factor(array, weights::QuantizedAmplitude, w, pts) = array_factor(array, as_ppa(weights), w, pts)
+array_factor(array, weights::QuantizedPhase, w, pts) = array_factor(array, ConjugateSymmetricWeights(), w, pts)
 
 # IterativeFloorSynthesis helpers
-# Orchard-Elliott-Stern peak correction. Only supported for ArrayGeometry (full array).
+# Orchard-Elliott-Stern peak correction.
 function slope_row_theta(array::ArrayGeometry, θ, A0_row)
     N = size(array.positions, 2)
     return [-im * 2π * (cos(θ) * array.positions[1, n] - sin(θ) * array.positions[3, n]) * A0_row[n] for n in 1:N]

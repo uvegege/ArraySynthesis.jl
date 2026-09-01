@@ -15,7 +15,7 @@ module ArraySynthesis
     include("./objective.jl")
     include("./strategy.jl")
     include("./synthesize.jl")
-
+    include("./milp_bounds.jl")
 
     export synthesize, array_factor
 

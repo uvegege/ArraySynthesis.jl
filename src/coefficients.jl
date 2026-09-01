@@ -48,3 +48,11 @@ end
 
 QuantizedAmplitude(levels::AbstractVector; β = nothing, relative = false) = QuantizedAmplitude(collect(Float64, levels), β, relative)
 as_ppa(w::QuantizedAmplitude) = ProgressivePhaseAmplitude(w.β)
+
+struct QuantizedPhase{T, B} <: AbstractExcitation
+    amplitude::T
+    levels::B
+    free_amplitudes::Bool
+end
+
+QuantizedPhase(levels::AbstractVector; amplitude = 1.0, free_amplitudes = false) = QuantizedPhase(amplitude, collect(Float64, levels), free_amplitudes)

@@ -192,6 +192,7 @@ end
 
 array_factor(array, weights::QuantizedAmplitude, w, pts) = array_factor(array, as_ppa(weights), w, pts)
 array_factor(array, weights::QuantizedPhase, w, pts) = array_factor(array, ConjugateSymmetricWeights(), w, pts)
+array_factor(array, weights::QuantizedWeights, w, pts) = array_factor(array, ComplexWeights(), w, pts)
 
 # IterativeFloorSynthesis helpers
 # Orchard-Elliott-Stern peak correction.

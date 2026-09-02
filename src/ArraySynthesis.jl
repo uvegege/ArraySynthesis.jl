@@ -15,7 +15,7 @@ module ArraySynthesis
     include("./objective.jl")
     include("./strategy.jl")
     include("./synthesize.jl")
-
+    include("./milp_bounds.jl")
 
     export synthesize, array_factor
 
@@ -40,6 +40,7 @@ module ArraySynthesis
 
     export AbstractExcitation
     export ComplexWeights, RealWeights, ConjugateSymmetricWeights, ProgressivePhaseAmplitude
+    export QuantizedAmplitude, QuantizedPhase, QuantizedWeights
 
     export AbstractFormulation, LP, QP, SOCP, MILP
 
@@ -54,5 +55,7 @@ module ArraySynthesis
     export SynthesisResult, IterativeSynthesisResult, MultiPatternResult
 
     export Tolerances, robust
+
+    export amplitude_upper_bounds
 
 end

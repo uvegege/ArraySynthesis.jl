@@ -15,6 +15,8 @@ imag_part(im, i) = im[i]
 
 steering_matrix_for(array, points, weights) = steering_matrix(array, direction_matrix(points))
 steering_matrix_for(array, points, weights::ProgressivePhaseAmplitude) = steering_matrix(array, direction_matrix(points) .- phase_direction(weights.β))
+steering_matrix_for(array, points, weights::QuantizedAmplitude) = steering_matrix_for(array, points, as_ppa(weights))
+steering_matrix_for(array, points, weights::QuantizedWeights) = steering_matrix_for(array, points, ComplexWeights())
 
 function array_factor_reim_from_steering(A, ::ComplexWeights, vars)
     A_re = real.(A); A_im = imag.(A)
@@ -66,11 +68,18 @@ function array_factor_reim_from_steering(A::Tuple, ::ProgressivePhaseAmplitude, 
     return A_cos * vars.a, nothing
 end
 
+array_factor_reim_from_steering(A, weights::QuantizedAmplitude, vars) = array_factor_reim_from_steering(A, as_ppa(weights), vars)
+array_factor_reim_from_steering(A, weights::QuantizedPhase, vars) = array_factor_reim_from_steering(A, ConjugateSymmetricWeights(), vars)
+array_factor_reim_from_steering(A, weights::QuantizedWeights, vars) = array_factor_reim_from_steering(A, ComplexWeights(), vars)
+
 function array_factor_reim(model, array::SymmetricArray, points, weights::ProgressivePhaseAmplitude, vars::AmplitudeVariables)
     A = steering_matrix_for(array, points, weights)
     return array_factor_reim_from_steering(A, weights, vars)
 end
 
+array_factor_reim(model, array, points, weights::QuantizedAmplitude, vars) = array_factor_reim(model, array, points, as_ppa(weights), vars)
+array_factor_reim(model, array, points, weights::QuantizedPhase, vars) = array_factor_reim(model, array, points, ConjugateSymmetricWeights(), vars)
+array_factor_reim(model, array, points, weights::QuantizedWeights, vars) = array_factor_reim(model, array, points, ComplexWeights(), vars)
 
 phase_direction(p::ThetaDirection) = (sin(p.θ), 0.0, cos(p.θ))
 phase_direction(β::UVDirection) = (β.u, β.v, sqrt(1.0 - β.u^2 - β.v^2))
@@ -168,35 +177,8 @@ function shared_l1_bound!(model, t, variables, formulation)
     end
 end
 
-#=
-function active_big_m!(model, vars::SparseVariables, big_m)
-    active_big_m!(model, vars.variables, vars.active, big_m)
-end
-
-function active_big_m!(model, vars::WeightVariables, active, big_m)
-    for n in eachindex(active)
-        @constraint(model, vars.w_re[n] <= big_m * active[n])
-        @constraint(model, vars.w_re[n] >= -big_m * active[n])
-    end
-    for n in eachindex(vars.w_im)
-        @constraint(model, vars.w_im[n] <= big_m * active[n])
-        @constraint(model, vars.w_im[n] >= -big_m * active[n])
-    end
-end
-
-function active_big_m!(model, vars::AmplitudeVariables, active, big_m)
-    for n in eachindex(active)
-        @constraint(model, vars.a[n] <= big_m * active[n])
-    end
-end
-
-active_limit!(model, vars::SparseVariables, limit::Nothing) = nothing
-active_limit!(model, vars::SparseVariables, limit::Integer) = @constraint(model, sum(vars.active) <= limit)
-=#
-
 l1_limit!(model, t, limit::Nothing) = nothing
 l1_limit!(model, t, limit) = @constraint(model, sum(t) <= limit)
-
 
 function sidelobe_constraints!(model, sl::SideLobeRegion, upper, array, weights, vars, formulation, robustness)
     af_re, af_im = array_factor_reim(model, array, sl.region.points, weights, vars)
@@ -217,8 +199,8 @@ shaped_reference_from_steering(A, target, im) = phase_retrieve(A, target)
 
 
 reference_matrix(array, points, weights) = steering_matrix(array, direction_matrix(points))
-
 reference_matrix(array, points, weights::ProgressivePhaseAmplitude) = steering_matrix(array, direction_matrix(points) .- phase_direction(weights.β))
+reference_matrix(array, points, weights::QuantizedAmplitude) = reference_matrix(array, points, as_ppa(weights))
 
 
 function phase_retrieve(A, target; iterations = 100)

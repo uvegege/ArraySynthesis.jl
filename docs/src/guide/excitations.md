@@ -12,6 +12,9 @@ Use this page to choose the excitation parametrization. For exact constructor si
 | [`RealWeights`](@ref "RealWeights") | `ArrayGeometry` | Real weights | Fixed-phase or amplitude-only feeding |
 | [`ConjugateSymmetricWeights`](@ref "ConjugateSymmetricWeights") | `SymmetricArray` | Complex half-array weights | Real array factor with maximum flexibility |
 | [`ProgressivePhaseAmplitude`](@ref "ProgressivePhaseAmplitude") | Any array | Real amplitudes with fixed phase gradient | Steered beams |
+| [`QuantizedAmplitude`](@ref "QuantizedAmplitude") | Any array | Discrete amplitude levels | Quantized amplitude tapers (MILP) |
+| [`QuantizedPhase`](@ref "QuantizedPhase") | Any array | Discrete phase levels | Fixed-resolution phase shifters (MILP) |
+| [`QuantizedWeights`](@ref "QuantizedWeights") | `ArrayGeometry` | Weights on a fixed constellation | Discrete complex feeding networks (MILP) |
 
 ## Real Array Factors
 
@@ -28,4 +31,6 @@ A real array factor is important because the modulus constraint becomes a pair o
 [`ConjugateSymmetricWeights`](@ref "ConjugateSymmetricWeights") requires a [`SymmetricArray`](@ref "SymmetricArray").
 
 [`ProgressivePhaseAmplitude`](@ref "ProgressivePhaseAmplitude") fixes a progressive phase reference and optimizes real amplitudes. If the reference direction is omitted, it is inferred from the first beam or shaped-beam region in the pattern.
+
+[`QuantizedAmplitude`](@ref "QuantizedAmplitude"), [`QuantizedPhase`](@ref "QuantizedPhase") and [`QuantizedWeights`](@ref "QuantizedWeights") restrict excitations to a discrete set of levels, using Big-M constraints under the [`MILP`](@ref "MILP") formulation.
 

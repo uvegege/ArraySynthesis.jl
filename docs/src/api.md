@@ -92,6 +92,9 @@ AbstractExcitation
 ComplexWeights
 RealWeights
 ConjugateSymmetricWeights
+QuantizedAmplitude
+QuantizedPhase
+QuantizedWeights
 ProgressivePhaseAmplitude
 ```
 
